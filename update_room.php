@@ -6,7 +6,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] !== 'admin') {
 }
 require_once('classes/database.php');
 $db = new Database();
-$conn = $db->getConnection();
 $message = "";
 
 $id = $_GET['id'] ?? null;
@@ -15,26 +14,18 @@ if (!$id) {
     exit();
 }
 
-$stmt = $conn->prepare("SELECT * FROM room WHERE Room_ID = ?");
-$stmt->bind_param("i", $id);
-$stmt->execute();
-$result = $stmt->get_result();
-$room = $result->fetch_assoc();
-$stmt->close();
+$room = $db->getRoomById($id);
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $type = trim($_POST['Room_Type']);
     $rate = floatval($_POST['Room_Rate']);
     $cap = intval($_POST['Room_Cap']);
-    $stmt = $conn->prepare("UPDATE room SET Room_Type=?, Room_Rate=?, Room_Cap=? WHERE Room_ID=?");
-    $stmt->bind_param("sdii", $type, $rate, $cap, $id);
-    if ($stmt->execute()) {
+    if ($db->updateRoom($id, $type, $rate, $cap)) {
         header("Location: manage_rooms.php");
         exit();
     } else {
         $message = "<div class='alert alert-danger'>Error updating room.</div>";
     }
-    $stmt->close();
 }
 ?>
 <!doctype html>

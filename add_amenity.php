@@ -13,15 +13,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $name = trim($_POST['Amenity_Name']);
     $desc = trim($_POST['Amenity_Desc']);
     $cost = floatval($_POST['Amenity_Cost']);
-    $stmt = $conn->prepare("INSERT INTO amenity (Amenity_Name, Amenity_Desc, Amenity_Cost) VALUES (?, ?, ?)");
-    $stmt->bind_param("ssd", $name, $desc, $cost);
-    if ($stmt->execute()) {
+    $result = $db->addAmenity($name, $desc, $cost);
+    if ($result['success']) {
         header("Location: manage_amenities.php");
         exit();
     } else {
-        $message = "<div class='alert alert-danger'>Error adding amenity.</div>";
+        $message = "<div class='alert alert-danger'>{$result['message']}</div>";
     }
-    $stmt->close();
 }
 ?>
 <!doctype html>

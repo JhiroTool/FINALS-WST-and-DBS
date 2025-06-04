@@ -20,46 +20,27 @@ if (isset($_POST['register'])) {
             });
         </script>";
     } else {
-        // Check if email already exists
-        $stmt = $conn->prepare("SELECT Admin_ID FROM administrator WHERE Admin_Email = ?");
-        $stmt->bind_param("s", $email);
-        $stmt->execute();
-        $stmt->store_result();
-        if ($stmt->num_rows > 0) {
+        $result = $db->registerAdmin($email, $password);
+        if ($result['success']) {
+            $sweetAlertConfig = "<script>
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Registration Successful',
+                    text: '{$result['message']}',
+                    confirmButtonText: 'Login'
+                }).then(() => {
+                    window.location.href = 'index.php';
+                });
+            </script>";
+        } else {
             $sweetAlertConfig = "<script>
                 Swal.fire({
                     icon: 'error',
                     title: 'Registration Failed',
-                    text: 'Email already registered.'
+                    text: '{$result['message']}'
                 });
             </script>";
-        } else {
-            $stmt->close();
-            $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-            $stmt = $conn->prepare("INSERT INTO administrator (Admin_Email, Admin_Password) VALUES (?, ?)");
-            $stmt->bind_param("ss", $email, $hashed_password);
-            if ($stmt->execute()) {
-                $sweetAlertConfig = "<script>
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Registration Successful',
-                        text: 'Admin account created.',
-                        confirmButtonText: 'Login'
-                    }).then(() => {
-                        window.location.href = 'index.php';
-                    });
-                </script>";
-            } else {
-                $sweetAlertConfig = "<script>
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Registration Failed',
-                        text: 'An error occurred. Please try again.'
-                    });
-                </script>";
-            }
         }
-        $stmt->close();
     }
 }
 ?>

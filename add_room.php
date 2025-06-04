@@ -13,15 +13,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $type = trim($_POST['Room_Type']);
     $rate = floatval($_POST['Room_Rate']);
     $cap = intval($_POST['Room_Cap']);
-    $stmt = $conn->prepare("INSERT INTO room (Room_Type, Room_Rate, Room_Cap) VALUES (?, ?, ?)");
-    $stmt->bind_param("sdi", $type, $rate, $cap);
-    if ($stmt->execute()) {
+    $result = $db->addRoom($type, $rate, $cap);
+    if ($result['success']) {
         header("Location: manage_rooms.php");
         exit();
     } else {
-        $message = "<div class='alert alert-danger'>Error adding room.</div>";
+        $message = "<div class='alert alert-danger'>{$result['message']}</div>";
     }
-    $stmt->close();
 }
 ?>
 <!doctype html>

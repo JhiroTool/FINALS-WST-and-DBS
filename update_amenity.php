@@ -6,7 +6,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] !== 'admin') {
 }
 require_once('classes/database.php');
 $db = new Database();
-$conn = $db->getConnection();
 $message = "";
 
 $id = $_GET['id'] ?? null;
@@ -15,26 +14,18 @@ if (!$id) {
     exit();
 }
 
-$stmt = $conn->prepare("SELECT * FROM amenity WHERE Amenity_ID = ?");
-$stmt->bind_param("i", $id);
-$stmt->execute();
-$result = $stmt->get_result();
-$amenity = $result->fetch_assoc();
-$stmt->close();
+$amenity = $db->getAmenityById($id);
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $name = trim($_POST['Amenity_Name']);
     $desc = trim($_POST['Amenity_Desc']);
     $cost = floatval($_POST['Amenity_Cost']);
-    $stmt = $conn->prepare("UPDATE amenity SET Amenity_Name=?, Amenity_Desc=?, Amenity_Cost=? WHERE Amenity_ID=?");
-    $stmt->bind_param("ssdi", $name, $desc, $cost, $id);
-    if ($stmt->execute()) {
+    if ($db->updateAmenity($id, $name, $desc, $cost)) {
         header("Location: manage_amenities.php");
         exit();
     } else {
         $message = "<div class='alert alert-danger'>Error updating amenity.</div>";
     }
-    $stmt->close();
 }
 ?>
 <!doctype html>

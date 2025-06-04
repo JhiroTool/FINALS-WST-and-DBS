@@ -6,9 +6,8 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] !== 'admin') {
 }
 require_once('classes/database.php');
 $db = new Database();
-$conn = $db->getConnection();
 
-$result = $conn->query("SELECT * FROM amenity");
+$amenities = $db->getAllAmenities();
 ?>
 <!doctype html>
 <html lang="en">
@@ -32,7 +31,7 @@ $result = $conn->query("SELECT * FROM amenity");
       </tr>
     </thead>
     <tbody>
-      <?php while($row = $result->fetch_assoc()): ?>
+      <?php foreach($amenities as $row): ?>
       <tr>
         <td><?= $row['Amenity_ID'] ?></td>
         <td><?= htmlspecialchars($row['Amenity_Name']) ?></td>
@@ -43,7 +42,7 @@ $result = $conn->query("SELECT * FROM amenity");
           <a href="delete_amenity.php?id=<?= $row['Amenity_ID'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Delete this amenity?');">Delete</a>
         </td>
       </tr>
-      <?php endwhile; ?>
+      <?php endforeach; ?>
     </tbody>
   </table>
   <a href="admin_homepage.php" class="btn btn-secondary">Back to Admin Homepage</a>

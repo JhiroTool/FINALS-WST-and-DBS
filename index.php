@@ -2,86 +2,37 @@
 session_start();
 require_once('classes/database.php');
 $db = new Database();
-$conn = $db->getConnection();
 $sweetAlertConfig = "";
 
 if (isset($_POST['login'])) {
     $email = $_POST['email'];
     $password = $_POST['password'];
 
-    // Check administrator
-    $stmt = $conn->prepare("SELECT Admin_ID, Admin_Email, Admin_Password FROM administrator WHERE Admin_Email = ?");
-    $stmt->bind_param("s", $email);
-    $stmt->execute();
-    $adminResult = $stmt->get_result();
-    if ($admin = $adminResult->fetch_assoc()) {
-        // For production, use password_verify!
-        if (password_verify($password, $admin['Admin_Password'])) {
-            $_SESSION['user_id'] = $admin['Admin_ID'];
-            $_SESSION['user_type'] = 'admin';
-            $_SESSION['user_FN'] = 'Administrator';
-            $redirectUrl = 'admin_homepage.php';
-            $sweetAlertConfig = "<script>
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Login Successful',
-                    text: 'Welcome, Administrator!',
-                    confirmButtonText: 'Continue'
-                }).then(() => {
-                    window.location.href = '$redirectUrl';
-                });
-            </script>";
-        } else {
-            $sweetAlertConfig = "<script>
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Login Failed',
-                    text: 'Invalid password.'
-                });
-            </script>";
-        }
+    $result = $db->loginUser($email, $password);
+    if ($result['success']) {
+        $_SESSION['user_id'] = $result['user_id'];
+        $_SESSION['user_type'] = $result['user_type'];
+        $_SESSION['user_FN'] = $result['user_FN'];
+        $redirectUrl = $result['redirect'];
+        $sweetAlertConfig = "<script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Login Successful',
+                text: 'Welcome, " . addslashes(htmlspecialchars($result['user_FN'])) . "!',
+                confirmButtonText: 'Continue'
+            }).then(() => {
+                window.location.href = '$redirectUrl';
+            });
+        </script>";
     } else {
-        // Check customer
-        $stmt = $conn->prepare("SELECT Cust_ID, Cust_FN, Cust_Email, Cust_Password FROM customer WHERE Cust_Email = ?");
-        $stmt->bind_param("s", $email);
-        $stmt->execute();
-        $custResult = $stmt->get_result();
-        if ($cust = $custResult->fetch_assoc()) {
-            if (password_verify($password, $cust['Cust_Password'])) {
-                $_SESSION['user_id'] = $cust['Cust_ID'];
-                $_SESSION['user_type'] = 'customer';
-                $_SESSION['user_FN'] = $cust['Cust_FN'];
-                $redirectUrl = 'homepage.php';
-                $sweetAlertConfig = "<script>
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Login Successful',
-                        text: 'Welcome, " . addslashes(htmlspecialchars($cust['Cust_FN'])) . "!',
-                        confirmButtonText: 'Continue'
-                    }).then(() => {
-                        window.location.href = '$redirectUrl';
-                    });
-                </script>";
-            } else {
-                $sweetAlertConfig = "<script>
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Login Failed',
-                        text: 'Invalid password.'
-                    });
-                </script>";
-            }
-        } else {
-            $sweetAlertConfig = "<script>
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Login Failed',
-                    text: 'No user found with that email.'
-                });
-            </script>";
-        }
+        $sweetAlertConfig = "<script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Login Failed',
+                text: '{$result['message']}'
+            });
+        </script>";
     }
-    $stmt->close();
 }
 ?>
 

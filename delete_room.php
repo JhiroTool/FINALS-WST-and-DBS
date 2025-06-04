@@ -6,14 +6,10 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] !== 'admin') {
 }
 require_once('classes/database.php');
 $db = new Database();
-$conn = $db->getConnection();
 
 $id = $_GET['id'] ?? null;
 if ($id) {
-    $stmt = $conn->prepare("DELETE FROM room WHERE Room_ID = ?");
-    $stmt->bind_param("i", $id);
-    $stmt->execute();
-    $stmt->close();
+    $db->deleteRoom($id);
 }
 header("Location: manage_rooms.php");
 exit();
