@@ -1,0 +1,150 @@
+/* Color Palette */
+:root {
+    --primary-green: #006400;
+    --accent-gold: #ffd700;
+    --dark-bg: #222;
+    --light-bg: #f8f9fa;
+    --white: #fff;
+}
+
+/* Section Spacing Utility */
+.section-space {
+    padding-top: 60px;
+    padding-bottom: 60px;
+}
+
+/* Custom Button Hover */
+.btn-custom {
+    background: var(--accent-gold);
+    color: var(--primary-green);
+    border-radius: 30px;
+    font-weight: 700;
+    transition: background 0.2s, color 0.2s, transform 0.2s;
+}
+.btn-custom:hover {
+    background: var(--primary-green);
+    color: var(--accent-gold);
+    transform: scale(1.05);
+}
+
+/* Card Shadow Enhancement */
+.card-custom {
+    border-radius: 22px;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.13);
+    background: #fff;
+    transition: box-shadow 0.2s, transform 0.2s;
+    border: 2px solid #ffd70022;
+    margin-bottom: 2.5rem;
+    padding: 2.5rem 1.5rem 2rem 1.5rem;
+}
+.card-custom:hover {
+    box-shadow: 0 12px 36px rgba(0,0,0,0.18);
+    transform: translateY(-6px) scale(1.03);
+}
+
+/* Section backgrounds for visual separation */
+.section-bg-light {
+    background: #f8f9fa;
+    border-radius: 32px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    margin-bottom: 40px;
+    padding: 40px 0;
+}
+.section-bg-gold {
+    background: linear-gradient(90deg, #fff 60%, #ffd70022 100%);
+    border-radius: 32px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    margin-bottom: 40px;
+    padding: 40px 0;
+}
+
+/* Section divider bar */
+.section-divider {
+    width: 80px;
+    height: 5px;
+    background: linear-gradient(90deg, #ffd700 0%, #fff 100%);
+    margin: 0 auto 2.5rem auto;
+    border-radius: 3px;
+}
+
+/* Responsive Gallery Images */
+.gallery-img {
+    width: 100%;
+    max-width: 260px;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 14px;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.10);
+    margin-bottom: 18px;
+}
+
+/* Back to Top Button Animation */
+#backToTopBtn {
+    animation: fadeInUp 0.5s;
+}
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(30px);}
+    to { opacity: 1; transform: translateY(0);}
+}
+
+/* Modal Shadow Enhancement */
+.modal-content {
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    border-radius: 18px;
+}
+
+/* Hero Overlay Softness */
+.hero-overlay {
+    background: linear-gradient(120deg, rgba(255,255,255,0.22) 60%, rgba(255,215,0,0.22) 100%);
+    backdrop-filter: blur(2px);
+}
+
+/* Improved Input Focus */
+.form-control:focus {
+    border-color: var(--accent-gold);
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.25);
+}
+
+/* Utility: Text Shadow for Headings */
+.text-shadow-gold {
+    text-shadow: 0 2px 8px var(--accent-gold), 0 1px 2px #0002;
+}
+
+/* Utility: Centered Flex */
+.flex-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Utility: Hide visually but keep accessible */
+.visually-hidden {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0,0,0,0) !important;
+    border: 0 !important;
+}
+
+/* Animate section titles */
+.section-title {
+    animation: fadeInDown 1s;
+}
+@keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-40px);}
+    to { opacity: 1; transform: translateY(0);}
+}
+
+/* Animate cards on load */
+.room-card, .card-custom {
+    animation: fadeInUp 1s;
+}
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(40px);}
+    to { opacity: 1; transform: translateY(0);}
+}
+
+/* ...add more custom styles as needed... */

@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Rooms | Victoria's Garden and Event Center</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" />
+    <link href="style.css" rel="stylesheet" />
+    <style>
+        .rooms-hero {
+            background: linear-gradient(120deg, #fff 60%, #ffd700 100%);
+            padding: 70px 0 40px 0;
+            text-align: center;
+        }
+        .rooms-hero h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #006400;
+            margin-bottom: 1rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        .rooms-hero p {
+            font-size: 1.1rem;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .room-card {
+            border-radius: 22px;
+            overflow: hidden;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+            background: #fff;
+            margin-bottom: 2.5rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 2px solid #ffd70022;
+        }
+        .room-card img {
+            width: 100%;
+            height: 240px;
+            object-fit: cover;
+            border-bottom: 4px solid #ffd700;
+        }
+        .room-card-body {
+            padding: 2rem 1.5rem 1.5rem 1.5rem;
+        }
+        .room-card-title {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: #006400;
+            margin-bottom: 0.5rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+        .room-features {
+            color: #888;
+            font-size: 0.98rem;
+            margin-bottom: 0.7rem;
+        }
+        .btn-book {
+            background: #ffd700;
+            color: #006400;
+            font-weight: 700;
+            border-radius: 30px;
+            padding: 0.7rem 2rem;
+            border: none;
+            transition: background 0.2s, color 0.2s, transform 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .btn-book:hover {
+            background: #006400;
+            color: #ffd700;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <!-- Rooms Hero Banner -->
+    <div class="rooms-hero">
+        <h1>Our Rooms</h1>
+        <p>
+            Discover comfort and elegance in every room. Whether you're traveling solo, as a couple, or with family, we have the perfect space for you.
+        </p>
+    </div>
+    <!-- Rooms List -->
+    <section class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-4">
+                <div class="room-card">
+                    <img src="img/room-1.jpg" alt="Deluxe Room">
+                    <div class="room-card-body">
+                        <div class="room-card-title">Deluxe Room</div>
+                        <div class="room-features"><i class="fas fa-bed"></i> 2 Single Beds &nbsp; | &nbsp; <i class="fas fa-eye"></i> Pool View</div>
+                        <p>A cozy room with two single beds and a scenic view of the pool. Perfect for friends or solo travelers.</p>
+                        <button class="btn btn-book w-100" onclick="window.location.href='resort.html#bookingModal'">Book Now</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="room-card">
+                    <img src="img/room-2.jpg" alt="Suite">
+                    <div class="room-card-body">
+                        <div class="room-card-title">Suite</div>
+                        <div class="room-features"><i class="fas fa-bed"></i> 1 Queen Bed &nbsp; | &nbsp; <i class="fas fa-spa"></i> Spa Access</div>
+                        <p>Elegant and spacious, our suite is ideal for couples seeking luxury and relaxation with exclusive spa access.</p>
+                        <button class="btn btn-book w-100" onclick="window.location.href='resort.html#bookingModal'">Book Now</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="room-card">
+                    <img src="img/room-3.jpg" alt="Family Room">
+                    <div class="room-card-body">
+                        <div class="room-card-title">Family Room</div>
+                        <div class="room-features"><i class="fas fa-bed"></i> Bunk Beds &nbsp; | &nbsp; <i class="fas fa-users"></i> Up to 5 Guests</div>
+                        <p>Spacious and practical, the family room is designed for groups or families, offering comfort and convenience for all.</p>
+                        <button class="btn btn-book w-100" onclick="window.location.href='resort.html#bookingModal'">Book Now</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Room Comparison Table -->
+    <section class="container pb-5">
+        <h4 class="mb-4 text-center" style="color:#006400;font-weight:700;">Room Comparison</h4>
+        <div class="table-responsive">
+            <table class="table table-bordered align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Room Type</th>
+                        <th>Beds</th>
+                        <th>Max Guests</th>
+                        <th>View</th>
+                        <th>Special Feature</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Deluxe Room</td>
+                        <td>2 Single Beds</td>
+                        <td>2</td>
+                        <td>Pool</td>
+                        <td>Cozy & Scenic</td>
+                    </tr>
+                    <tr>
+                        <td>Suite</td>
+                        <td>1 Queen Bed</td>
+                        <td>2</td>
+                        <td>Garden</td>
+                        <td>Spa Access</td>
+                    </tr>
+                    <tr>
+                        <td>Family Room</td>
+                        <td>Bunk Beds</td>
+                        <td>5</td>
+                        <td>Courtyard</td>
+                        <td>Spacious for Groups</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+    <!-- Back to Main Button -->
+    <section class="container text-center pb-5">
+        <a href="resort.html" class="btn btn-custom btn-lg"><i class="fas fa-home me-1"></i>Back to Main</a>
+    </section>
+    <!-- Call to Action -->
+    <section class="container text-center pb-5">
+        <h3 class="mb-3" style="color:#006400;font-weight:700;">Ready to book your stay?</h3>
+        <a href="resort.html#bookingModal" class="btn btn-book btn-lg">Book Now</a>
+    </section>
+    <!-- Footer -->
+    <footer class="mt-4">
+        <div class="container text-center">
+            <div>
+                <strong>Victoria's Garden and Event Center</strong><br>
+                123 Paradise Road, Nature City<br>
+                Phone: (123) 456-7890 | Email: info@victoriasgarden.com
+            </div>
+            <div class="footer-social my-3">
+                <a href="https://facebook.com" target="_blank"><i class="fab fa-facebook-f"></i></a>
+                <a href="https://twitter.com" target="_blank"><i class="fab fa-twitter"></i></a>
+                <a href="https://instagram.com" target="_blank"><i class="fab fa-instagram"></i></a>
+                <a href="https://linkedin.com" target="_blank"><i class="fab fa-linkedin-in"></i></a>
+            </div>
+            <div>
+                &copy;2025 Victoria's Garden and Event Center. All rights reserved.
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
