@@ -7,7 +7,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] !== 'admin') {
 require_once('classes/database.php');
 $db = new Database();
 $conn = $db->getConnection();
-$message = "";
+$sweetAlertConfig = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $name = trim($_POST['Amenity_Name']);
@@ -15,10 +15,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $cost = floatval($_POST['Amenity_Cost']);
     $result = $db->addAmenity($name, $desc, $cost);
     if ($result['success']) {
-        header("Location: manage_amenities.php");
-        exit();
+        $sweetAlertConfig = "<script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Amenity Added',
+                text: 'Amenity has been added successfully!',
+                confirmButtonText: 'OK'
+            }).then(() => {
+                window.location.href = 'manage_amenities.php';
+            });
+        </script>";
     } else {
-        $message = "<div class='alert alert-danger'>{$result['message']}</div>";
+        $sweetAlertConfig = "<script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: '{$result['message']}'
+            });
+        </script>";
     }
 }
 ?>
@@ -28,11 +42,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   <meta charset="utf-8">
   <title>Add Amenity</title>
   <link rel="stylesheet" href="./bootstrap-5.3.3-dist/css/bootstrap.css">
+  <link rel="stylesheet" href="./package/dist/sweetalert2.css">
 </head>
 <body>
 <div class="container mt-5">
   <h3>Add Amenity</h3>
-  <?= $message ?>
   <form method="post">
     <div class="mb-3">
       <label>Name:</label>
@@ -50,5 +64,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <a href="manage_amenities.php" class="btn btn-secondary">Back</a>
   </form>
 </div>
+<script src="./package/dist/sweetalert2.all.min.js"></script>
+<?= $sweetAlertConfig ?>
 </body>
 </html>

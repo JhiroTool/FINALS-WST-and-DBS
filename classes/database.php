@@ -239,5 +239,56 @@ class Database {
         $stmt->close();
         return $success;
     }
+
+    public function getAllCustomers() {
+        $conn = $this->getConnection();
+        $result = $conn->query("SELECT * FROM customer");
+        $customers = [];
+        if ($result) {
+            while ($row = $result->fetch_assoc()) {
+                $customers[] = $row;
+            }
+            $result->free();
+        }
+        return $customers;
+    }
+
+    public function getAllBookings() {
+        $conn = $this->getConnection();
+        $result = $conn->query("SELECT * FROM booking");
+        $bookings = [];
+        if ($result) {
+            while ($row = $result->fetch_assoc()) {
+                $bookings[] = $row;
+            }
+            $result->free();
+        }
+        return $bookings;
+    }
+
+    public function getAllBookingsWithCustomer() {
+        $conn = $this->getConnection();
+        $sql = "SELECT b.*, c.Cust_FN, c.Cust_LN, c.Cust_Email
+                FROM booking b
+                LEFT JOIN customer c ON b.Cust_ID = c.Cust_ID";
+        $result = $conn->query($sql);
+        $bookings = [];
+        if ($result) {
+            while ($row = $result->fetch_assoc()) {
+                $bookings[] = $row;
+            }
+            $result->free();
+        }
+        return $bookings;
+    }
+
+    public function addBooking($cust_id, $emp_id, $in, $out, $cost, $status, $roomType, $guests) {
+        $conn = $this->getConnection();
+        $stmt = $conn->prepare("INSERT INTO booking (Cust_ID, Emp_ID, Booking_IN, Booking_Out, Booking_Cost, Booking_Status, Room_Type, Guests) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("iissdssi", $cust_id, $emp_id, $in, $out, $cost, $status, $roomType, $guests);
+        $result = $stmt->execute();
+        $stmt->close();
+        return $result;
+    }
 }
 ?>

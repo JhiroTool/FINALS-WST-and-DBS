@@ -5,16 +5,16 @@
     <!-- Required meta tags -->
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-
+ 
     <!-- Bootstrap CSS v5.3.2 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous" />
-
+ 
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" />
-
+ 
     <!-- Animate.css -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet" />
-
+ 
     <!-- Custom CSS -->
     <link href="style.css" rel="stylesheet" />
     <style>
@@ -351,7 +351,7 @@
             .room-card img { height: 170px; }
         }
     </style>
-    <link rel="icon" type="image/png" href="img/favicon.png" />
+    <link rel="icon" type="image/jpg" href="img/resort.jpg" />
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800&display=swap" rel="stylesheet">
 </head>
@@ -362,10 +362,10 @@
     </div>
     <!-- Settings Button -->
     <button class="settings-btn animate__animated animate__pulse animate__infinite" onclick="toggleSidebar()" style="position:fixed;top:30px;right:30px;z-index:1300;">Settings</button>
-
+ 
     <!-- Sidebar Overlay -->
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
-
+ 
     <!-- Sidebar -->
     <div class="sidebar" id="settingsSidebar">
         <span class="close-btn fs-2" style="cursor:pointer;position:absolute;top:10px;right:18px;" onclick="toggleSidebar()">×</span>
@@ -400,7 +400,7 @@
             Customize your experience
         </div>
     </div>
-
+ 
     <!-- NAVBAR -->
     <nav class="navbar navbar-expand-lg fixed-top">
         <div class="container">
@@ -419,10 +419,10 @@
             </div>
         </div>
     </nav>
-
+ 
     <!-- HERO SECTION -->
     <div class="hero-section">
-        <img src="img/resort.jpg" alt="Resort" class="hero-bg-img">
+        <img src="img/resort.jpg" type="image/jpg" alt="Resort" class="hero-bg-img">
         <div class="hero-overlay"></div>
         <div class="hero-content animate__animated animate__fadeInDown">
             <h1>Welcome to Victoria's Garden</h1>
@@ -435,14 +435,14 @@
             <span>Scroll Down</span>
         </div>
     </div>
-
+ 
     <!-- ABOUT SECTION -->
     <section class="container section-bg-light" id="about">
         <h2 class="section-title">About Us</h2>
         <div class="section-divider"></div>
         <div class="row justify-content-center align-items-center">
             <div class="col-lg-6 mb-4 mb-lg-0">
-                <img src="img/about-resort.jpg" alt="Victoria's Garden" class="img-fluid rounded-4 shadow" style="max-width: 420px;">
+                <img src="img/resort.jpg" alt="Victoria's Garden" class="img-fluid rounded-4 shadow" style="max-width: 420px;">
             </div>
             <div class="col-lg-6 text-center text-lg-start" style="font-size:1.15rem; color:#444;">
                 <p>
@@ -454,7 +454,7 @@
             </div>
         </div>
     </section>
-
+ 
     <!-- WHY CHOOSE US SECTION -->
     <section class="container section-bg-gold" id="whychoose">
         <h2 class="section-title">Why Choose Us</h2>
@@ -483,7 +483,7 @@
             </div>
         </div>
     </section>
-
+ 
     <!-- ROOMS SECTION -->
     <section class="container section-bg-light" id="rooms">
         <h2 class="section-title">Our Rooms</h2>
@@ -517,12 +517,12 @@
                         <p>A practical room with bunk beds, ideal for families or groups.</p>
                         <a href="#" class="btn btn-outline-primary w-100" data-bs-toggle="modal" data-bs-target="#bookingModal">View Details</a>
                     </div>
-                    
+                   
                 </div>
             </div>
         </div>
     </section>
-
+ 
     <!-- AMENITIES SECTION -->
     <section class="container section-bg-gold" id="amenities">
         <h2 class="section-title">Amenities</h2>
@@ -555,7 +555,7 @@
             </div>
         </div>
     </section>
-
+ 
     <!-- TESTIMONIALS SECTION -->
     <section class="container section-bg-light" id="testimonials">
         <h2 class="section-title">Guest Testimonials</h2>
@@ -585,7 +585,7 @@
             </button>
         </div>
     </section>
-
+ 
     <!-- CONTACT SECTION -->
     <section class="container section-bg-gold" id="contact">
         <h2 class="section-title">Contact Us</h2>
@@ -610,7 +610,7 @@
             </div>
         </div>
     </section>
-
+ 
     <!-- DAY TOUR / NIGHT TOUR / OVERNIGHT SECTION -->
     <section class="container py-5" id="tourchoices">
         <h2 class="section-title">Tour & Stay Choices</h2>
@@ -639,9 +639,18 @@
                     <a href="#bookingModal" class="btn btn-custom mt-2" data-bs-toggle="modal" onclick="setBookingType('Overnight Stay')">Book Overnight</a>
                 </div>
             </div>
+            <!-- NEW CHOICE: Exclusive Overnight (All Rooms, up to 30 pax) -->
+            <div class="col-md-12 mb-4">
+                <div class="card-custom p-4 h-100" style="background:linear-gradient(120deg,#ffd70022 80%,#fff 100%);">
+                    <i class="fas fa-users fa-2x mb-3 text-danger"></i>
+                    <h5 class="mb-2">Exclusive Overnight (All Rooms, up to 30 pax)</h5>
+                    <p>Book the entire resort for your group! Enjoy all rooms exclusively for a maximum of 30 guests, including full amenities, breakfast, and privacy for your special event or gathering.</p>
+                    <a href="#bookingModal" class="btn btn-custom mt-2" data-bs-toggle="modal" onclick="setBookingType('Exclusive Overnight')">Book Exclusive Overnight</a>
+                </div>
+            </div>
         </div>
     </section>
-
+ 
     <!-- BOOKING MODAL -->
     <div class="modal fade" id="bookingModal" tabindex="-1" aria-labelledby="bookingModalLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -676,6 +685,7 @@
                                 <option value="daytour">Day Tour</option>
                                 <option value="nighttour">Night Tour</option>
                                 <option value="overnightstay">Overnight Stay</option>
+                                <option value="exclusiveovernight">Exclusive Overnight (All Rooms, up to 30 pax)</option>
                             </select>
                         </div>
                     </form>
@@ -687,7 +697,7 @@
             </div>
         </div>
     </div>
-
+ 
     <!-- Newsletter Modal -->
     <div class="modal fade" id="newsletterModal" tabindex="-1" aria-labelledby="newsletterModalLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -711,7 +721,7 @@
             </div>
         </div>
     </div>
-
+ 
     <!-- Floating Book Now Button -->
     <button class="floating-btn animate__animated animate__pulse animate__infinite" data-bs-toggle="modal" data-bs-target="#bookingModal">Book Now</button>
     <!-- Back to Top Button -->
@@ -735,10 +745,12 @@
             </div>
         </div>
     </footer>
-
+ 
     <!-- SCRIPTS -->
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js" integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+" crossorigin="anonymous"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         function toggleSidebar() {
             const sidebar = document.getElementById('settingsSidebar');
@@ -746,7 +758,7 @@
             sidebar.classList.toggle('active');
             overlay.classList.toggle('active');
         }
-
+ 
         function toggleTheme() {
             document.body.classList.toggle('dark-mode');
             document.querySelector('.navbar').classList.toggle('dark-mode');
@@ -762,32 +774,32 @@
             document.querySelectorAll('.btn-outline-primary').forEach(el => el.classList.toggle('dark-mode'));
             document.querySelector('footer').classList.toggle('dark-mode');
         }
-
+ 
         function changeLanguage(lang) {
             // Placeholder for language change logic
             alert(`Language changed to ${lang}`);
         }
-
+ 
         function toggleAccessibility() {
             // Placeholder for accessibility options
             alert('Accessibility options opened');
         }
-
+ 
         function startVirtualTour() {
             // Placeholder for virtual tour
             alert('Starting virtual tour');
         }
-
+ 
         function openLiveChat() {
             // Placeholder for live chat
             alert('Opening live chat');
         }
-
+ 
         function showNewsletterModal() {
             const modal = new bootstrap.Modal(document.getElementById('newsletterModal'));
             modal.show();
         }
-
+ 
         function submitNewsletter() {
             const email = document.getElementById('newsletterEmail').value;
             if (email) {
@@ -798,13 +810,13 @@
                 alert('Please enter a valid email.');
             }
         }
-
+ 
         function validateForm(event) {
             event.preventDefault();
             const name = document.getElementById('name').value;
             const email = document.getElementById('email').value;
             const message = document.getElementById('message').value;
-
+ 
             if (name && email && message) {
                 alert('Message sent successfully!');
                 document.getElementById('contactForm').reset();
@@ -813,7 +825,7 @@
             }
             return false;
         }
-
+ 
         function toggleDateFields() {
             var roomType = document.getElementById('roomType');
             var dateFields = document.getElementById('dateFields');
@@ -831,7 +843,7 @@
                 document.getElementById('checkOut').required = true;
             }
         }
-
+ 
         function submitBooking() {
             var roomType = document.getElementById('roomType').value;
             var guests = document.getElementById('guests').value;
@@ -840,21 +852,33 @@
             // Only require dates for overnight/rooms
             if (roomType !== 'daytour' && roomType !== 'nighttour') {
                 if (!checkIn.value || !checkOut.value || !guests || !roomType) {
-                    alert('Please fill in all fields.');
+                    Swal.fire('Error', 'Please fill in all fields.', 'error');
+                    return;
+                }
+                // Date validation: check-in must be before check-out
+                var inDate = new Date(checkIn.value);
+                var outDate = new Date(checkOut.value);
+                if (inDate >= outDate) {
+                    Swal.fire('Invalid Dates', 'Check-in date must be before check-out date.', 'error');
                     return;
                 }
             } else {
                 if (!guests || !roomType) {
-                    alert('Please fill in all fields.');
+                    Swal.fire('Error', 'Please fill in all fields.', 'error');
                     return;
                 }
             }
-            alert('Booking submitted successfully!');
+            Swal.fire({
+                icon: 'success',
+                title: 'Booking Submitted!',
+                text: 'Your booking has been submitted successfully!',
+                confirmButtonColor: '#ffd700'
+            });
             document.getElementById('bookingForm').reset();
             bootstrap.Modal.getInstance(document.getElementById('bookingModal')).hide();
             toggleDateFields();
         }
-
+ 
         function setBookingType(type) {
             var roomType = document.getElementById('roomType');
             if (roomType) {
@@ -862,6 +886,7 @@
                 if (type === 'Day Tour') value = 'daytour';
                 else if (type === 'Night Tour') value = 'nighttour';
                 else if (type === 'Overnight Stay') value = 'overnightstay';
+                else if (type === 'Exclusive Overnight') value = 'exclusiveovernight';
                 // Optionally, you can add these as options if not present
                 let found = false;
                 for (let i = 0; i < roomType.options.length; i++) {
@@ -874,21 +899,21 @@
                 if (!found && value) {
                     let opt = document.createElement('option');
                     opt.value = value;
-                    opt.text = type;
+                    opt.text = type === 'Exclusive Overnight' ? 'Exclusive Overnight (All Rooms, up to 30 pax)' : type;
                     roomType.add(opt);
                     roomType.value = opt.value;
                 }
                 toggleDateFields();
             }
         }
-
+ 
         // Loading Spinner
         window.addEventListener('load', function() {
             setTimeout(() => {
                 document.getElementById('loadingSpinner').classList.add('hide');
             }, 600);
         });
-
+ 
         // Back to Top Button
         const backToTopBtn = document.getElementById('backToTopBtn');
         window.addEventListener('scroll', function() {
@@ -901,7 +926,7 @@
         backToTopBtn.addEventListener('click', function() {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
-
+ 
         // Navbar background on scroll
         window.addEventListener('scroll', function() {
             const navbar = document.querySelector('.navbar');
@@ -911,7 +936,7 @@
                 navbar.classList.remove('scrolled');
             }
         });
-
+ 
         // Smooth scroll for anchor links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
@@ -922,7 +947,7 @@
                 }
             });
         });
-
+ 
         // Ensure correct fields are shown when modal opens
         document.addEventListener('DOMContentLoaded', function() {
             var bookingModal = document.getElementById('bookingModal');
