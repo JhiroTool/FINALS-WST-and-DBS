@@ -147,8 +147,30 @@ class Database {
     public function loginUser($email, $password) {
         $conn = $this->getConnection();
 
-        // Check administrator
-        $stmt = $conn->prepare("SELECT Admin_ID, Admin_Email, Admin_Password FROM administrator WHERE Admin_Email = ?");
+        // Check if user is a customer
+        $stmt = $conn->prepare("SELECT * FROM customer WHERE Cust_Email = ?");
+        $stmt->bind_param("s", $email);
+        $stmt->execute();
+        $customerResult = $stmt->get_result();
+        if ($customer = $customerResult->fetch_assoc()) {
+            if (password_verify($password, $customer['Cust_Password'])) {
+                $stmt->close();
+                return [
+                    'success' => true,
+                    'user_id' => $customer['Cust_ID'],
+                    'user_type' => 'user',
+                    'user_FN' => $customer['Cust_FN'],
+                    'redirect' => 'homepage.php'
+                ];
+            } else {
+                $stmt->close();
+                return ['success' => false, 'message' => 'Invalid password.'];
+            }
+        }
+        $stmt->close();
+
+        // Check if user is an admin
+        $stmt = $conn->prepare("SELECT * FROM administrator WHERE Admin_Email = ?");
         $stmt->bind_param("s", $email);
         $stmt->execute();
         $adminResult = $stmt->get_result();
@@ -159,7 +181,7 @@ class Database {
                     'success' => true,
                     'user_id' => $admin['Admin_ID'],
                     'user_type' => 'admin',
-                    'user_FN' => 'Administrator',
+                    'user_FN' => 'Admin',
                     'redirect' => 'admin_homepage.php'
                 ];
             } else {
@@ -169,29 +191,11 @@ class Database {
         }
         $stmt->close();
 
-        // Check customer
-        $stmt = $conn->prepare("SELECT Cust_ID, Cust_FN, Cust_Email, Cust_Password FROM customer WHERE Cust_Email = ?");
-        $stmt->bind_param("s", $email);
-        $stmt->execute();
-        $custResult = $stmt->get_result();
-        if ($cust = $custResult->fetch_assoc()) {
-            if (password_verify($password, $cust['Cust_Password'])) {
-                $stmt->close();
-                return [
-                    'success' => true,
-                    'user_id' => $cust['Cust_ID'],
-                    'user_type' => 'customer',
-                    'user_FN' => $cust['Cust_FN'],
-                    'redirect' => 'homepage.php'
-                ];
-            } else {
-                $stmt->close();
-                return ['success' => false, 'message' => 'Invalid password.'];
-            }
-        }
-        $stmt->close();
-
-        return ['success' => false, 'message' => 'No user found with that email.'];
+        // If login fails
+        return [
+            'success' => false,
+            'message' => 'Invalid email or password.'
+        ];
     }
 
     public function getAllAmenities() {
@@ -286,6 +290,137 @@ class Database {
         $conn = $this->getConnection();
         $stmt = $conn->prepare("INSERT INTO booking (Cust_ID, Emp_ID, Booking_IN, Booking_Out, Booking_Cost, Booking_Status, Room_Type, Guests) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
         $stmt->bind_param("iissdssi", $cust_id, $emp_id, $in, $out, $cost, $status, $roomType, $guests);
+        $result = $stmt->execute();
+        $stmt->close();
+        return $result;
+    }
+
+    public function bookRoom($cust_id, $check_in, $check_out, $guests, $cost, $status, $emp_id = null) {
+        $conn = $this->getConnection();
+        $stmt = $conn->prepare("INSERT INTO booking (Cust_ID, Emp_ID, Booking_IN, Booking_Out, Booking_Cost, Booking_Status, Guests)
+                            VALUES (?, ?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("iissdsi", $cust_id, $emp_id, $check_in, $check_out, $cost, $status, $guests);
+        $result = $stmt->execute();
+        $booking_id = $stmt->insert_id;
+        $stmt->close();
+        return $result ? $booking_id : false;
+    }
+
+    public function getAllEmployees() {
+        $stmt = $this->conn->prepare("SELECT * FROM employee");
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $employees = [];
+        while ($row = $result->fetch_assoc()) {
+            $employees[] = $row;
+        }
+        return $employees;
+    }
+
+    public function addBookingRoom($booking_id, $room_id) {
+        $conn = $this->getConnection();
+        $stmt = $conn->prepare("INSERT INTO bookingroom (Booking_ID, Room_ID) VALUES (?, ?)");
+        $stmt->bind_param("ii", $booking_id, $room_id);
+        $result = $stmt->execute();
+        $stmt->close();
+        return $result;
+    }
+
+    public function addBookingAmenity($booking_id, $amenity_id) {
+        $conn = $this->getConnection();
+        $stmt = $conn->prepare("INSERT INTO bookingamenity (Booking_ID, Amenity_ID) VALUES (?, ?)");
+        $stmt->bind_param("ii", $booking_id, $amenity_id);
+        $result = $stmt->execute();
+        $stmt->close();
+        return $result;
+    }
+
+    public function addFeedback($cust_id, $booking_id, $rating, $comment) {
+        $conn = $this->getConnection();
+        $stmt = $conn->prepare("INSERT INTO feedback (Cust_ID, Booking_ID, Feed_Rating, Feed_Comment) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("iids", $cust_id, $booking_id, $rating, $comment);
+        $result = $stmt->execute();
+        $stmt->close();
+        return $result;
+    }
+
+    public function getRecentFeedback($limit = 10) {
+        $conn = $this->getConnection();
+        $sql = "SELECT f.Feed_Rating, f.Feed_Comment, f.Feed_DOF, c.Cust_FN 
+                FROM feedback f 
+                JOIN customer c ON f.Cust_ID = c.Cust_ID 
+                ORDER BY f.Feed_DOF DESC 
+                LIMIT ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $limit);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $feedbacks = [];
+        while ($row = $result->fetch_assoc()) {
+            $feedbacks[] = $row;
+        }
+        $stmt->close();
+        return $feedbacks;
+    }
+
+    public function getAllServices() {
+        $conn = $this->getConnection();
+        $result = $conn->query("SELECT * FROM service");
+        $services = [];
+        if ($result) {
+            while ($row = $result->fetch_assoc()) {
+                $services[] = $row;
+            }
+        }
+        return $services;
+    }
+
+    // CREATE
+    public function addService($name, $desc, $cost) {
+        $conn = $this->getConnection();
+        $stmt = $conn->prepare("INSERT INTO service (Service_Name, Service_Desc, Service_Cost) VALUES (?, ?, ?)");
+        $stmt->bind_param("ssd", $name, $desc, $cost);
+        $result = $stmt->execute();
+        $stmt->close();
+        return $result;
+    }
+
+    // UPDATE
+    public function updateService($id, $name, $desc, $cost) {
+        $conn = $this->getConnection();
+        $stmt = $conn->prepare("UPDATE service SET Service_Name=?, Service_Desc=?, Service_Cost=? WHERE Service_ID=?");
+        $stmt->bind_param("ssdi", $name, $desc, $cost, $id);
+        $result = $stmt->execute();
+        $stmt->close();
+        return $result;
+    }
+
+    // DELETE
+    public function deleteService($id) {
+        $conn = $this->getConnection();
+        $stmt = $conn->prepare("DELETE FROM service WHERE Service_ID=?");
+        $stmt->bind_param("i", $id);
+        $result = $stmt->execute();
+        $stmt->close();
+        return $result;
+    }
+
+    // GET BY ID (for editing)
+    public function getServiceById($id) {
+        $conn = $this->getConnection();
+        $stmt = $conn->prepare("SELECT * FROM service WHERE Service_ID=?");
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $service = $result->fetch_assoc();
+        $stmt->close();
+        return $service;
+    }
+
+    public function addBookingService($booking_id, $service_id) {
+        $conn = $this->getConnection();
+        $stmt = $conn->prepare("INSERT INTO bookingservice (Booking_ID, Service_ID) VALUES (?, ?)");
+        $stmt->bind_param("ii", $booking_id, $service_id);
         $result = $stmt->execute();
         $stmt->close();
         return $result;

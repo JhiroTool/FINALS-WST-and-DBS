@@ -12,6 +12,9 @@ $rooms = $db->getAllRooms();
 $amenities = $db->getAllAmenities();
 $customers = $db->getAllCustomers();
 $bookings = $db->getAllBookings();
+$employees = $db->getAllEmployees(); // <-- Add this line
+$feedbacks = $db->getRecentFeedback(10);
+$services = $db->getAllServices();
 ?>
 <!doctype html>
 <html lang="en">
@@ -32,8 +35,11 @@ $bookings = $db->getAllBookings();
       <ul class="sidebar-nav">
         <li><a href="#rooms"><i class="bi bi-door-closed"></i> Rooms</a></li>
         <li><a href="#amenities"><i class="bi bi-gem"></i> Amenities</a></li>
+        <li><a href="#services"><i class="bi bi-briefcase"></i> Services</a></li> <!-- Add this line -->
         <li><a href="#customers"><i class="bi bi-people"></i> Customers</a></li>
         <li><a href="#bookings"><i class="bi bi-calendar-check"></i> Bookings</a></li>
+        <li><a href="#employee"><i class="bi bi-person-badge"></i> Employees</a></li>
+        <li><a href="#admin-feedback"><i class="bi bi-chat-left-dots"></i> Recent Feedback</a></li>
         <li class="mt-auto"><a href="logout.php" class="btn btn-logout w-100"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
       </ul>
     </aside>
@@ -133,6 +139,7 @@ $bookings = $db->getAllBookings();
                   <th>Email</th>
                   <th>Phone</th>
                   <th>Password</th>
+                  <th>Actions</th> <!-- Added Actions column -->
                 </tr>
               </thead>
               <tbody>
@@ -144,6 +151,16 @@ $bookings = $db->getAllBookings();
                   <td><?= htmlspecialchars($customer['Cust_Email']) ?></td>
                   <td><?= htmlspecialchars($customer['Cust_Phone']) ?></td>
                   <td style="font-size:0.85em;word-break:break-all;"><?= htmlspecialchars($customer['Cust_Password']) ?></td>
+                  <td>
+                    <!-- Ban/Disable Button -->
+                    <?php if (empty($customer['is_banned'])): ?>
+                      <a href="ban_customer.php?id=<?= $customer['Cust_ID'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Ban this customer?');"><i class="bi bi-person-x"></i> Ban</a>
+                    <?php else: ?>
+                      <span class="badge bg-danger">Banned</span>
+                    <?php endif; ?>
+                    <!-- View Details Button -->
+                    <a href="customer_details.php?id=<?= $customer['Cust_ID'] ?>" class="btn btn-info btn-sm"><i class="bi bi-eye"></i> View</a>
+                  </td>
                 </tr>
                 <?php endforeach; ?>
               </tbody>
@@ -187,6 +204,122 @@ $bookings = $db->getAllBookings();
             </table>
           </div>
         </div>
+      </section>
+
+      <!-- EMPLOYEES SECTION -->
+      <section id="employee" class="dashboard-section">
+        <div class="dashboard-card glass-card">
+          <div class="dashboard-header">
+            <span class="dashboard-title"><i class="bi bi-person-badge"></i> Employees</span>
+            <a href="add_employee.php" class="btn btn-action btn-sm"><i class="bi bi-plus-circle"></i> Add Employee</a>
+          </div>
+          <div class="card-body">
+            <table class="table dashboard-table align-middle">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>First Name</th>
+                  <th>Last Name</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <?php foreach ($employees as $employee): ?>
+                <tr>
+                  <td><?= $employee['Emp_ID'] ?></td>
+                  <td><?= htmlspecialchars($employee['Emp_FN']) ?></td>
+                  <td><?= htmlspecialchars($employee['Emp_LN']) ?></td>
+                  <td><?= htmlspecialchars($employee['Emp_Email']) ?></td>
+                  <td><?= htmlspecialchars($employee['Emp_Phone']) ?></td>
+                  <td>
+                    <a href="edit_employee.php?id=<?= $employee['Emp_ID'] ?>" class="btn btn-warning btn-sm"><i class="bi bi-pencil-square"></i></a>
+                    <a href="assign_task.php?id=<?= $employee['Emp_ID'] ?>" class="btn btn-success btn-sm"><i class="bi bi-list-task"></i> Assign Task</a>
+                  </td>
+                </tr>
+                <?php endforeach; ?>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- SERVICES SECTION -->
+      <section id="services" class="dashboard-section">
+        <div class="dashboard-card glass-card">
+          <div class="dashboard-header">
+            <span class="dashboard-title"><i class="bi bi-briefcase"></i> Services</span>
+            <a href="add_service.php" class="btn btn-action btn-sm"><i class="bi bi-plus-circle"></i> Add Service</a>
+          </div>
+          <div class="card-body">
+            <table class="table dashboard-table align-middle">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>Description</th>
+                  <th>Cost</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <?php if ($services): ?>
+                  <?php foreach ($services as $service): ?>
+                    <tr>
+                      <td><?= $service['Service_ID'] ?></td>
+                      <td><?= htmlspecialchars($service['Service_Name']) ?></td>
+                      <td><?= htmlspecialchars($service['Service_Desc']) ?></td>
+                      <td><?= number_format($service['Service_Cost'], 2) ?></td>
+                      <td>
+                        <a href="update_service.php?id=<?= $service['Service_ID'] ?>" class="btn btn-warning btn-sm"><i class="bi bi-pencil-square"></i></a>
+                        <a href="delete_service.php?id=<?= $service['Service_ID'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Delete this service?');"><i class="bi bi-trash"></i></a>
+                      </td>
+                    </tr>
+                  <?php endforeach; ?>
+                <?php else: ?>
+                  <tr><td colspan="5" class="text-muted">No services found.</td></tr>
+                <?php endif; ?>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- FEEDBACK VIEW SECTION -->
+      <section class="minimal-section" id="admin-feedback">
+          <h2 class="section-title mb-4"><i class="bi bi-chat-left-dots"></i> Recent Feedback</h2>
+          <div class="row g-3">
+              <?php if ($feedbacks): ?>
+                  <?php foreach($feedbacks as $row): ?>
+                      <div class="col-md-6">
+                          <div class="card shadow-sm border-0 h-100">
+                              <div class="card-body d-flex align-items-start">
+                                  <div class="me-3">
+                                      <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center" style="width:48px;height:48px;font-size:1.5rem;">
+                                          <?= strtoupper(substr($row['Cust_FN'], 0, 1)) ?>
+                                      </div>
+                                  </div>
+                                  <div>
+                                      <div class="fw-semibold"><?= htmlspecialchars($row['Cust_FN']) ?></div>
+                                      <div class="mb-1" style="color:#ffc107;">
+                                          <?php
+                                          $stars = intval($row['Feed_Rating']);
+                                          for ($i = 0; $i < $stars; $i++) echo '<i class="bi bi-star-fill"></i>';
+                                          for ($i = $stars; $i < 5; $i++) echo '<i class="bi bi-star"></i>';
+                                          ?>
+                                      </div>
+                                      <div class="mb-2 text-muted" style="font-size:0.98em;"><?= htmlspecialchars($row['Feed_Comment']) ?></div>
+                                      <div class="text-muted small"><i class="bi bi-clock"></i> <?= date('M d, Y H:i', strtotime($row['Feed_DOF'])) ?></div>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                  <?php endforeach; ?>
+              <?php else: ?>
+                  <div class="col-12 text-muted">No feedback yet.</div>
+              <?php endif; ?>
+          </div>
       </section>
     </main>
   </div>

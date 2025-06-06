@@ -54,30 +54,39 @@ if (isset($_POST['register'])) {
   <link rel="stylesheet" href="./package/dist/sweetalert2.css">
   <title>Admin Registration</title>
 </head>
-<body>
-  <div class="container custom-container rounded-3 shadow p-4 bg-light mt-5">
-    <h3 class="text-center mb-4">Register as Admin</h3>
-    <form method="post" action="" novalidate>
-      <div class="form-group mb-3">
-        <label for="Admin_Email">Email:</label>
-        <input type="email" class="form-control" name="Admin_Email" required>
+<body class="bg-light">
+  <div class="container py-5">
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <div class="card shadow glass-card">
+          <div class="card-header bg-primary text-white">
+            <h3 class="mb-0 text-center">Register as Admin</h3>
+          </div>
+          <div class="card-body">
+            <form method="post" action="" novalidate>
+              <div class="mb-3">
+                <label for="Admin_Email" class="form-label">Email:</label>
+                <input type="email" class="form-control" name="Admin_Email" required>
+              </div>
+              <div class="mb-3">
+                <label for="Admin_Password" class="form-label">Password:</label>
+                <input type="password" class="form-control" name="Admin_Password" required>
+              </div>
+              <div class="mb-3">
+                <label for="Admin_ConfirmPassword" class="form-label">Confirm Password:</label>
+                <input type="password" class="form-control" name="Admin_ConfirmPassword" required>
+              </div>
+              <button type="submit" name="register" class="btn btn-success w-100 py-2">Register</button>
+              <div class="text-center mt-4">
+                <a href="index.php" class="text-decoration-none">Back to Login</a>
+              </div>
+            </form>
+          </div>
+        </div>
       </div>
-      <div class="form-group mb-3">
-        <label for="Admin_Password">Password:</label>
-        <input type="password" class="form-control" name="Admin_Password" required>
-      </div>
-      <div class="form-group mb-3">
-        <label for="Admin_ConfirmPassword">Confirm Password:</label>
-        <input type="password" class="form-control" name="Admin_ConfirmPassword" required>
-      </div>
-      <button type="submit" name="register" class="btn btn-success w-100 py-2">Register</button>
-      <div class="text-center mt-4">
-        <a href="index.php" class="text-decoration-none">Back to Login</a>
-      </div>
-    </form>
+    </div>
     <script src="./bootstrap-5.3.3-dist/js/bootstrap.js"></script>
     <script src="./package/dist/sweetalert2.js"></script>
-    <script src="script.js"></script>
     <?php echo $sweetAlertConfig; ?>
   </div>
 </body>

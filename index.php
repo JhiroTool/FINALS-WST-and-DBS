@@ -13,6 +13,10 @@ if (isset($_POST['login'])) {
         $_SESSION['user_id'] = $result['user_id'];
         $_SESSION['user_type'] = $result['user_type'];
         $_SESSION['user_FN'] = $result['user_FN'];
+        // Set Cust_ID for customers
+        if ($result['user_type'] === 'user') {
+            $_SESSION['Cust_ID'] = $result['user_id'];
+        }
         $redirectUrl = $result['redirect'];
         $sweetAlertConfig = "<script>
             Swal.fire({
