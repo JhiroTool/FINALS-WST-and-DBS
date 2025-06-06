@@ -1,0 +1,121 @@
+body {
+  min-height: 100vh;
+  background: radial-gradient(circle at 60% 40%, #a5b4fc 0%, #6366f1 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+.custom-container {
+  max-width: 380px;
+  margin: auto;
+  border-radius: 1.5rem;
+  box-shadow: 0 8px 32px rgba(60, 60, 120, 0.18);
+  background: rgba(255,255,255,0.95);
+  padding: 2.5rem 2rem 2rem 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.custom-container::before {
+  content: "";
+  position: absolute;
+  top: -60px;
+  right: -60px;
+  width: 120px;
+  height: 120px;
+  background: linear-gradient(135deg, #6366f1 60%, #818cf8 100%);
+  border-radius: 50%;
+  opacity: 0.13;
+  z-index: 0;
+}
+
+h3.text-center {
+  color: #4338ca;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin-bottom: 1.5rem;
+  z-index: 1;
+  position: relative;
+}
+
+.form-group label {
+  font-weight: 500;
+  color: #6366f1;
+  margin-bottom: 0.3rem;
+}
+
+.form-control {
+  border-radius: 0.7rem;
+  border: 1.5px solid #e0e7ff;
+  background: #f3f4f6;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-control:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 0.15rem rgba(99,102,241,.13);
+  background: #fff;
+}
+
+.btn-primary {
+  background: linear-gradient(90deg, #6366f1 60%, #818cf8 100%);
+  border: none;
+  border-radius: 2rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  font-size: 1.1rem;
+  padding: 0.75rem 0;
+  box-shadow: 0 4px 16px rgba(99,102,241,0.13);
+  transition: 
+    background 0.2s,
+    box-shadow 0.2s,
+    transform 0.1s;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255,255,255,0.25);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.3s, height 0.3s;
+  z-index: 0;
+}
+
+.btn-primary:active::after {
+  width: 200%;
+  height: 200%;
+}
+
+.btn-primary:hover, .btn-primary:focus {
+  background: linear-gradient(90deg, #4338ca 60%, #6366f1 100%);
+  box-shadow: 0 6px 24px rgba(99,102,241,0.18);
+  transform: translateY(-2px) scale(1.03);
+  outline: none;
+}
+
+.text-center a {
+  color: #6366f1;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.text-center a:hover {
+  color: #4338ca;
+  text-decoration: underline;
+}
+
+@media (max-width: 500px) {
+  .custom-container {
+    padding: 1.5rem 0.7rem 1.2rem 0.7rem;
+    max-width: 98vw;
+  }
+}

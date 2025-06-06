@@ -45,6 +45,7 @@ if (isset($_POST['login'])) {
   <!-- Bootstrap CSS -->
   <link rel="stylesheet" href="./bootstrap-5.3.3-dist/css/bootstrap.css">
   <link rel="stylesheet" href="./package/dist/sweetalert2.css">
+  <link rel="stylesheet" href="assets/css/login.css"> <!-- Added custom CSS -->
   <title>Guest Accommodation System</title>
 </head>
 <body>
