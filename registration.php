@@ -13,8 +13,18 @@ if (isset($_POST['register'])) {
     $password = $_POST['Cust_Password'];
     $confirm_password = $_POST['Cust_ConfirmPassword'];
 
+    // Check for empty fields
+    if (empty($fname) || empty($lname) || empty($email) || empty($phone) || empty($password) || empty($confirm_password)) {
+        $sweetAlertConfig = "<script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Registration Failed',
+                text: 'All fields are required.'
+            });
+        </script>";
+    }
     // Password match check
-    if ($password !== $confirm_password) {
+    else if ($password !== $confirm_password) {
         $sweetAlertConfig = "<script>
             Swal.fire({
                 icon: 'error',
@@ -23,27 +33,43 @@ if (isset($_POST['register'])) {
             });
         </script>";
     } else {
-        $result = $db->registerCustomer($fname, $lname, $email, $phone, $password);
-        if ($result['success']) {
-            $sweetAlertConfig = "<script>
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Registration Successful',
-                    text: '{$result['message']}',
-                    confirmButtonText: 'Login'
-                }).then(() => {
-                    window.location.href = 'index.php';
-                });
-            </script>";
-        } else {
+        // Check if email or phone already exists
+        $stmt = $conn->prepare("SELECT * FROM customer WHERE Cust_Email = ? OR Cust_Phone = ?");
+        $stmt->bind_param("ss", $email, $phone);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($result->num_rows > 0) {
             $sweetAlertConfig = "<script>
                 Swal.fire({
                     icon: 'error',
                     title: 'Registration Failed',
-                    text: '{$result['message']}'
+                    text: 'Email or phone number is already in use.'
                 });
             </script>";
+        } else {
+            $result = $db->registerCustomer($fname, $lname, $email, $phone, $password);
+            if ($result['success']) {
+                $sweetAlertConfig = "<script>
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Registration Successful',
+                        text: '{$result['message']}',
+                        confirmButtonText: 'Login'
+                    }).then(() => {
+                        window.location.href = 'index.php';
+                    });
+                </script>";
+            } else {
+                $sweetAlertConfig = "<script>
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Registration Failed',
+                        text: '{$result['message']}'
+                    });
+                </script>";
+            }
         }
+        $stmt->close();
     }
 }
 ?>
@@ -162,5 +188,50 @@ if (isset($_POST['register'])) {
     <script src="./package/dist/sweetalert2.js"></script>
     <?php echo $sweetAlertConfig; ?>
   </div>
+  <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const emailInput = document.querySelector('input[name="Cust_Email"]');
+    const phoneInput = document.querySelector('input[name="Cust_Phone"]');
+
+    function checkField(type, value) {
+        const data = {};
+        data[type] = value;
+        fetch('check_customer.php', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: new URLSearchParams(data)
+        })
+        .then(response => response.json())
+        .then(res => {
+            let msgId = type + '-msg';
+            let msgElem = document.getElementById(msgId);
+            if (!msgElem) {
+                msgElem = document.createElement('div');
+                msgElem.id = msgId;
+                msgElem.style.color = 'red';
+                msgElem.style.fontSize = '0.95em';
+                if (type === 'email') {
+                    emailInput.parentNode.appendChild(msgElem);
+                } else {
+                    phoneInput.parentNode.appendChild(msgElem);
+                }
+            }
+            if (res.exists && res.field === type) {
+                msgElem.textContent = res.message;
+            } else {
+                msgElem.textContent = '';
+            }
+        });
+    }
+
+    emailInput.addEventListener('blur', function() {
+        if (this.value.trim() !== '') checkField('email', this.value.trim());
+    });
+
+    phoneInput.addEventListener('blur', function() {
+        if (this.value.trim() !== '') checkField('phone', this.value.trim());
+    });
+});
+</script>
 </body>
 </html>
