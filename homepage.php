@@ -2,6 +2,7 @@
 session_start();
 require_once('classes/database.php');
 $db = new Database();
+$conn = $db->getConnection();
 
 if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] !== 'user') {
     header("Location: index.php");
@@ -145,7 +146,9 @@ $services = $db->getAllServices();
                     <div class="card room-card p-3 mb-3">
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <h5 class="mb-0"><?= htmlspecialchars($room['Room_Type']) ?></h5>
-                            <span class="badge bg-success fs-6">₱<?= number_format($room['Room_Rate'], 2) ?></span>
+                            <span class="badge bg-success fs-6">
+                                ₱<?= number_format($db->getRoomPrice($room['Room_ID'], $room['Room_Rate']), 2) ?>
+                            </span>
                         </div>
                         <div class="mb-2 text-muted">Capacity: <?= $room['Room_Cap'] ?></div>
                         <a href="book_room.php?id=<?= $room['Room_ID'] ?>" class="btn btn-success btn-sm w-100">Book</a>
@@ -169,7 +172,7 @@ $services = $db->getAllServices();
                                 - <?= htmlspecialchars($amenity['Amenity_Desc']) ?>
                             <?php endif; ?>
                             <?php if (isset($amenity['Amenity_Cost'])): ?>
-                                (₱<?= number_format($amenity['Amenity_Cost'], 2) ?>)
+                                (₱<?= number_format($db->getAmenityPrice($amenity['Amenity_ID'], $amenity['Amenity_Cost']), 2) ?>)
                             <?php endif; ?>
                         </span>
                     </div>
@@ -189,7 +192,9 @@ $services = $db->getAllServices();
                                 <div class="card-body">
                                     <h5 class="card-title mb-1"><?= htmlspecialchars($service['Service_Name']) ?></h5>
                                     <div class="mb-2 text-muted"><?= htmlspecialchars($service['Service_Desc']) ?></div>
-                                    <span class="badge bg-success">₱<?= number_format($service['Service_Cost'], 2) ?></span>
+                                    <span class="badge bg-success">
+                                        ₱<?= number_format($db->getServicePrice($service['Service_ID'], $service['Service_Cost']), 2) ?>
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -314,3 +319,44 @@ $services = $db->getAllServices();
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+
+<?php
+// Get the booking date (e.g., from a form)
+$booking_in = $_POST['booking_in']; // or wherever you get the check-in date
+
+// --- ROOM PRICE ---
+$stmt = $conn->prepare("SELECT Price FROM roomprices WHERE Room_ID = ? AND ? BETWEEN PromValidF AND PromValidT ORDER BY PromValidT DESC LIMIT 1");
+$stmt->bind_param("is", $room_id, $booking_in);
+$stmt->execute();
+$stmt->bind_result($promo_price);
+if ($stmt->fetch()) {
+    $room_price = $promo_price;
+} else {
+    $room_price = $regular_room_price;
+}
+$stmt->close();
+
+// --- AMENITY PRICE ---
+$stmt = $conn->prepare("SELECT Price FROM amenityprices WHERE Amenity_ID = ? AND ? BETWEEN PromValidF AND PromValidT ORDER BY PromValidT DESC LIMIT 1");
+$stmt->bind_param("is", $amenity_id, $booking_in);
+$stmt->execute();
+$stmt->bind_result($promo_price);
+if ($stmt->fetch()) {
+    $amenity_price = $promo_price;
+} else {
+    $amenity_price = $regular_amenity_price;
+}
+$stmt->close();
+
+// --- SERVICE PRICE ---
+$stmt = $conn->prepare("SELECT Price FROM serviceprices WHERE Service_ID = ? AND ? BETWEEN PromValidF AND PromValidT ORDER BY PromValidT DESC LIMIT 1");
+$stmt->bind_param("is", $service_id, $booking_in);
+$stmt->execute();
+$stmt->bind_result($promo_price);
+if ($stmt->fetch()) {
+    $service_price = $promo_price;
+} else {
+    $service_price = $regular_service_price;
+}
+$stmt->close();
+?>

@@ -425,5 +425,67 @@ class Database {
         $stmt->close();
         return $result;
     }
+
+    public function getPaymentsByBooking($booking_id) {
+        $conn = $this->getConnection();
+        $stmt = $conn->prepare("SELECT Payment_ID, Payment_Amount, Payment_Method, Payment_Date FROM payment WHERE Booking_ID = ? ORDER BY Payment_Date DESC");
+        $stmt->bind_param("i", $booking_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $payments = [];
+        while ($row = $result->fetch_assoc()) {
+            $payments[] = $row;
+        }
+        $stmt->close();
+        return $payments;
+    }
+
+    // Get current or booking-date-based room price (promo or regular)
+    public function getRoomPrice($room_id, $default_price, $ref_date = null) {
+        $conn = $this->getConnection();
+        $date = $ref_date ?: date('Y-m-d H:i:s');
+        $stmt = $conn->prepare("SELECT Price FROM roomprices WHERE Room_ID = ? AND ? BETWEEN PromValidF AND PromValidT ORDER BY PromValidT DESC LIMIT 1");
+        $stmt->bind_param("is", $room_id, $date);
+        $stmt->execute();
+        $stmt->bind_result($promo_price);
+        if ($stmt->fetch()) {
+            $stmt->close();
+            return $promo_price;
+        }
+        $stmt->close();
+        return $default_price;
+    }
+
+    // Get current or booking-date-based amenity price (promo or regular)
+    public function getAmenityPrice($amenity_id, $default_price, $ref_date = null) {
+        $conn = $this->getConnection();
+        $date = $ref_date ?: date('Y-m-d H:i:s');
+        $stmt = $conn->prepare("SELECT Price FROM amenityprices WHERE Amenity_ID = ? AND ? BETWEEN PromValidF AND PromValidT ORDER BY PromValidT DESC LIMIT 1");
+        $stmt->bind_param("is", $amenity_id, $date);
+        $stmt->execute();
+        $stmt->bind_result($promo_price);
+        if ($stmt->fetch()) {
+            $stmt->close();
+            return $promo_price;
+        }
+        $stmt->close();
+        return $default_price;
+    }
+
+    // Get current or booking-date-based service price (promo or regular)
+    public function getServicePrice($service_id, $default_price, $ref_date = null) {
+        $conn = $this->getConnection();
+        $date = $ref_date ?: date('Y-m-d H:i:s');
+        $stmt = $conn->prepare("SELECT Price FROM serviceprices WHERE Service_ID = ? AND ? BETWEEN PromValidF AND PromValidT ORDER BY PromValidT DESC LIMIT 1");
+        $stmt->bind_param("is", $service_id, $date);
+        $stmt->execute();
+        $stmt->bind_result($promo_price);
+        if ($stmt->fetch()) {
+            $stmt->close();
+            return $promo_price;
+        }
+        $stmt->close();
+        return $default_price;
+    }
 }
 ?>

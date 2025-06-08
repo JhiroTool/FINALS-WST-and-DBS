@@ -15,6 +15,24 @@ $bookings = $db->getAllBookings();
 $employees = $db->getAllEmployees(); // <-- Add this line
 $feedbacks = $db->getRecentFeedback(10);
 $services = $db->getAllServices();
+
+$amenityPromos = [];
+$stmt = $db->getConnection()->query("SELECT ap.*, a.Amenity_Name FROM amenityprices ap JOIN amenity a ON ap.Amenity_ID = a.Amenity_ID ORDER BY ap.PromValidF DESC");
+while ($row = $stmt->fetch_assoc()) {
+    $amenityPromos[] = $row;
+}
+
+$roomPromos = [];
+$stmt = $db->getConnection()->query("SELECT rp.*, r.Room_Type FROM roomprices rp JOIN room r ON rp.Room_ID = r.Room_ID ORDER BY rp.PromValidF DESC");
+while ($row = $stmt->fetch_assoc()) {
+    $roomPromos[] = $row;
+}
+
+$servicePromos = [];
+$stmt = $db->getConnection()->query("SELECT sp.*, s.Service_Name FROM serviceprices sp JOIN service s ON sp.Service_ID = s.Service_ID ORDER BY sp.PromValidF DESC");
+while ($row = $stmt->fetch_assoc()) {
+    $servicePromos[] = $row;
+}
 ?>
 <!doctype html>
 <html lang="en">
@@ -55,6 +73,7 @@ $services = $db->getAllServices();
           <div class="dashboard-header">
             <span class="dashboard-title"><i class="bi bi-door-closed"></i> Rooms</span>
             <a href="add_room.php" class="btn btn-action btn-sm"><i class="bi bi-plus-circle"></i> Add Room</a>
+            <a href="add_room_promo.php" class="btn btn-info btn-sm"><i class="bi bi-tag"></i> Add Room Promo</a>
           </div>
           <div class="card-body">
             <table class="table dashboard-table align-middle">
@@ -92,6 +111,7 @@ $services = $db->getAllServices();
           <div class="dashboard-header">
             <span class="dashboard-title"><i class="bi bi-gem"></i> Amenities</span>
             <a href="add_amenity.php" class="btn btn-action btn-sm"><i class="bi bi-plus-circle"></i> Add Amenity</a>
+            <a href="add_amenity_promo.php" class="btn btn-info btn-sm"><i class="bi bi-tag"></i> Add Amenity Promo</a>
           </div>
           <div class="card-body">
             <table class="table dashboard-table align-middle">
@@ -186,6 +206,7 @@ $services = $db->getAllServices();
                   <th>Check-Out</th>
                   <th>Cost</th>
                   <th>Status</th>
+                  <th>Actions</th> <!-- Added Actions column -->
                 </tr>
               </thead>
               <tbody>
@@ -198,6 +219,12 @@ $services = $db->getAllServices();
                   <td><?= $booking['Booking_Out'] ?></td>
                   <td><?= number_format($booking['Booking_Cost'], 2) ?></td>
                   <td><?= htmlspecialchars($booking['Booking_Status']) ?></td>
+                  <td>
+                    <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#paymentsModal<?= $booking['Booking_ID'] ?>">
+                      <i class="bi bi-cash-coin"></i> View Payments
+                    </button>
+                    <a href="payment.php?booking_id=<?= $booking['Booking_ID'] ?>" class="btn btn-success btn-sm"><i class="bi bi-plus-circle"></i> Record Payment</a>
+                  </td>
                 </tr>
                 <?php endforeach; ?>
               </tbody>
@@ -251,6 +278,7 @@ $services = $db->getAllServices();
           <div class="dashboard-header">
             <span class="dashboard-title"><i class="bi bi-briefcase"></i> Services</span>
             <a href="add_service.php" class="btn btn-action btn-sm"><i class="bi bi-plus-circle"></i> Add Service</a>
+            <a href="add_service_promo.php" class="btn btn-info btn-sm"><i class="bi bi-tag"></i> Add Service Promo</a>
           </div>
           <div class="card-body">
             <table class="table dashboard-table align-middle">
@@ -321,8 +349,175 @@ $services = $db->getAllServices();
               <?php endif; ?>
           </div>
       </section>
+
+      <!-- AMENITY PROMOS SECTION -->
+      <section id="amenity-promos" class="dashboard-section">
+        <div class="dashboard-card glass-card mt-4">
+          <div class="dashboard-header">
+            <span class="dashboard-title"><i class="bi bi-tag"></i> Amenity Promos</span>
+          </div>
+          <div class="card-body">
+            <table class="table table-bordered table-sm align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>ID</th>
+                  <th>Amenity</th>
+                  <th>Promo Price</th>
+                  <th>Valid From</th>
+                  <th>Valid To</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <?php if ($amenityPromos): ?>
+                  <?php foreach ($amenityPromos as $promo): ?>
+                    <tr>
+                      <td><?= $promo['AP_ID'] ?></td>
+                      <td><?= htmlspecialchars($promo['Amenity_Name']) ?></td>
+                      <td><span class="badge bg-success">₱<?= number_format($promo['Price'], 2) ?></span></td>
+                      <td><?= date('M d, Y H:i', strtotime($promo['PromValidF'])) ?></td>
+                      <td><?= date('M d, Y H:i', strtotime($promo['PromValidT'])) ?></td>
+                      <td>
+                        <a href="edit_amenity_promo.php?id=<?= $promo['AP_ID'] ?>" class="btn btn-warning btn-sm"><i class="bi bi-pencil-square"></i></a>
+                        <a href="delete_amenity_promo.php?id=<?= $promo['AP_ID'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Delete this promo?');"><i class="bi bi-trash"></i></a>
+                      </td>
+                    </tr>
+                  <?php endforeach; ?>
+                <?php else: ?>
+                  <tr><td colspan="5" class="text-muted text-center">No promos found.</td></tr>
+                <?php endif; ?>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ROOM PROMOS SECTION -->
+      <section id="room-promos" class="dashboard-section">
+        <div class="dashboard-card glass-card mt-4">
+          <div class="dashboard-header">
+            <span class="dashboard-title"><i class="bi bi-tag"></i> Room Promos</span>
+          </div>
+          <div class="card-body">
+            <table class="table table-bordered table-sm align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>ID</th>
+                  <th>Room</th>
+                  <th>Promo Price</th>
+                  <th>Valid From</th>
+                  <th>Valid To</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <?php if ($roomPromos): ?>
+                    <?php foreach ($roomPromos as $promo): ?>
+                        <tr>
+                            <td><?= $promo['RP_ID'] ?></td>
+                            <td><?= htmlspecialchars($promo['Room_Type']) ?></td>
+                            <td><span class="badge bg-success">₱<?= number_format($promo['Price'], 2) ?></span></td>
+                            <td><?= date('M d, Y H:i', strtotime($promo['PromValidF'])) ?></td>
+                            <td><?= date('M d, Y H:i', strtotime($promo['PromValidT'])) ?></td>
+                            <td>
+                                <a href="edit_room_promo.php?id=<?= $promo['RP_ID'] ?>" class="btn btn-warning btn-sm"><i class="bi bi-pencil-square"></i></a>
+                                <a href="delete_room_promo.php?id=<?= $promo['RP_ID'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Delete this promo?');"><i class="bi bi-trash"></i></a>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <tr><td colspan="6" class="text-muted text-center">No promos found.</td></tr>
+                <?php endif; ?>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- SERVICE PROMOS SECTION -->
+      <section id="service-promos" class="dashboard-section">
+        <div class="dashboard-card glass-card mt-4">
+          <div class="dashboard-header">
+            <span class="dashboard-title"><i class="bi bi-tag"></i> Service Promos</span>
+          </div>
+          <div class="card-body">
+            <table class="table table-bordered table-sm align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>ID</th>
+                  <th>Service</th>
+                  <th>Promo Price</th>
+                  <th>Valid From</th>
+                  <th>Valid To</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <?php if ($servicePromos): ?>
+                  <?php foreach ($servicePromos as $promo): ?>
+                    <tr>
+                      <td><?= $promo['SP_ID'] ?></td>
+                      <td><?= htmlspecialchars($promo['Service_Name']) ?></td>
+                      <td><span class="badge bg-success">₱<?= number_format($promo['Price'], 2) ?></span></td>
+                      <td><?= date('M d, Y H:i', strtotime($promo['PromValidF'])) ?></td>
+                      <td><?= date('M d, Y H:i', strtotime($promo['PromValidT'])) ?></td>
+                      <td>
+                        <a href="edit_service_promo.php?id=<?= $promo['SP_ID'] ?>" class="btn btn-warning btn-sm"><i class="bi bi-pencil-square"></i></a>
+                        <a href="delete_service_promo.php?id=<?= $promo['SP_ID'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Delete this promo?');"><i class="bi bi-trash"></i></a>
+                      </td>
+                    </tr>
+                  <?php endforeach; ?>
+                <?php else: ?>
+                  <tr><td colspan="6" class="text-muted text-center">No promos found.</td></tr>
+                <?php endif; ?>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
     </main>
   </div>
   <script src="./bootstrap-5.3.3-dist/js/bootstrap.js"></script>
 </body>
 </html>
+
+<?php foreach ($bookings as $booking): 
+  $payments = $db->getPaymentsByBooking($booking['Booking_ID']);
+?>
+<div class="modal fade" id="paymentsModal<?= $booking['Booking_ID'] ?>" tabindex="-1" aria-labelledby="paymentsModalLabel<?= $booking['Booking_ID'] ?>" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="paymentsModalLabel<?= $booking['Booking_ID'] ?>">Payments for Booking #<?= $booking['Booking_ID'] ?></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <?php if ($payments): ?>
+          <table class="table table-bordered">
+            <thead>
+              <tr>
+                <th>Payment ID</th>
+                <th>Amount</th>
+                <th>Method</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              <?php foreach ($payments as $pay): ?>
+                <tr>
+                  <td><?= $pay['Payment_ID'] ?></td>
+                  <td>₱<?= number_format($pay['Payment_Amount'], 2) ?></td>
+                  <td><?= htmlspecialchars($pay['Payment_Method']) ?></td>
+                  <td><?= $pay['Payment_Date'] ?></td>
+                </tr>
+              <?php endforeach; ?>
+            </tbody>
+          </table>
+        <?php else: ?>
+          <div class="text-muted">No payments recorded for this booking.</div>
+        <?php endif; ?>
+      </div>
+    </div>
+  </div>
+</div>
+<?php endforeach; ?>
