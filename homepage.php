@@ -161,20 +161,24 @@ $services = $db->getAllServices();
         <!-- AMENITIES SECTION -->
         <section class="minimal-section" id="amenities">
             <h2 class="section-title">Amenities</h2>
-            <div class="row">
+            <div class="row g-3">
                 <?php foreach($amenities as $amenity): ?>
-                <div class="col-md-6 mb-2">
-                    <div class="d-flex align-items-center">
-                        <i class="fa-solid fa-circle-check amenity-icon"></i>
-                        <span>
-                            <strong><?= htmlspecialchars($amenity['Amenity_Name']) ?></strong>
-                            <?php if (!empty($amenity['Amenity_Desc'])): ?>
-                                - <?= htmlspecialchars($amenity['Amenity_Desc']) ?>
-                            <?php endif; ?>
-                            <?php if (isset($amenity['Amenity_Cost'])): ?>
-                                (₱<?= number_format($db->getAmenityPrice($amenity['Amenity_ID'], $amenity['Amenity_Cost']), 2) ?>)
-                            <?php endif; ?>
-                        </span>
+                <div class="col-md-6 col-lg-4">
+                    <div class="card shadow-sm border-0 h-100 glass-card">
+                        <div class="card-body d-flex align-items-center">
+                            <div class="me-3">
+                                <i class="fa-solid fa-circle-check amenity-icon fs-2"></i>
+                            </div>
+                            <div>
+                                <div class="fw-semibold"><?= htmlspecialchars($amenity['Amenity_Name']) ?></div>
+                                <?php if (!empty($amenity['Amenity_Desc'])): ?>
+                                    <div class="text-muted small mb-1"><?= htmlspecialchars($amenity['Amenity_Desc']) ?></div>
+                                <?php endif; ?>
+                                <span class="badge bg-success">
+                                    ₱<?= number_format($db->getAmenityPrice($amenity['Amenity_ID'], $amenity['Amenity_Cost']), 2) ?>
+                                </span>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <?php endforeach; ?>
@@ -184,15 +188,18 @@ $services = $db->getAllServices();
         <!-- SERVICES SECTION -->
         <section class="minimal-section" id="services">
             <h2 class="section-title">Our Services</h2>
-            <div class="row">
+            <div class="row g-3">
                 <?php if ($services && count($services)): ?>
                     <?php foreach ($services as $service): ?>
-                        <div class="col-md-6 mb-3">
-                            <div class="card shadow-sm border-0 h-100">
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card shadow-sm border-0 h-100 glass-card">
                                 <div class="card-body">
-                                    <h5 class="card-title mb-1"><?= htmlspecialchars($service['Service_Name']) ?></h5>
-                                    <div class="mb-2 text-muted"><?= htmlspecialchars($service['Service_Desc']) ?></div>
-                                    <span class="badge bg-success">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="fa-solid fa-gear text-info fs-2 me-2"></i>
+                                        <h5 class="card-title mb-0"><?= htmlspecialchars($service['Service_Name']) ?></h5>
+                                    </div>
+                                    <div class="mb-2 text-muted small"><?= htmlspecialchars($service['Service_Desc']) ?></div>
+                                    <span class="badge bg-info text-dark">
                                         ₱<?= number_format($db->getServicePrice($service['Service_ID'], $service['Service_Cost']), 2) ?>
                                     </span>
                                 </div>
@@ -319,44 +326,3 @@ $services = $db->getAllServices();
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-
-<?php
-// Get the booking date (e.g., from a form)
-$booking_in = $_POST['booking_in']; // or wherever you get the check-in date
-
-// --- ROOM PRICE ---
-$stmt = $conn->prepare("SELECT Price FROM roomprices WHERE Room_ID = ? AND ? BETWEEN PromValidF AND PromValidT ORDER BY PromValidT DESC LIMIT 1");
-$stmt->bind_param("is", $room_id, $booking_in);
-$stmt->execute();
-$stmt->bind_result($promo_price);
-if ($stmt->fetch()) {
-    $room_price = $promo_price;
-} else {
-    $room_price = $regular_room_price;
-}
-$stmt->close();
-
-// --- AMENITY PRICE ---
-$stmt = $conn->prepare("SELECT Price FROM amenityprices WHERE Amenity_ID = ? AND ? BETWEEN PromValidF AND PromValidT ORDER BY PromValidT DESC LIMIT 1");
-$stmt->bind_param("is", $amenity_id, $booking_in);
-$stmt->execute();
-$stmt->bind_result($promo_price);
-if ($stmt->fetch()) {
-    $amenity_price = $promo_price;
-} else {
-    $amenity_price = $regular_amenity_price;
-}
-$stmt->close();
-
-// --- SERVICE PRICE ---
-$stmt = $conn->prepare("SELECT Price FROM serviceprices WHERE Service_ID = ? AND ? BETWEEN PromValidF AND PromValidT ORDER BY PromValidT DESC LIMIT 1");
-$stmt->bind_param("is", $service_id, $booking_in);
-$stmt->execute();
-$stmt->bind_result($promo_price);
-if ($stmt->fetch()) {
-    $service_price = $promo_price;
-} else {
-    $service_price = $regular_service_price;
-}
-$stmt->close();
-?>

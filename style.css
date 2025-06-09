@@ -42,6 +42,20 @@
     transform: translateY(-6px) scale(1.03);
 }
 
+/* Glassmorphic Card Style */
+.glass-card {
+    background: rgba(255,255,255,0.92);
+    border-radius: 1.3rem;
+    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.13);
+    border: 1.5px solid rgba(120,120,120,0.08);
+    backdrop-filter: blur(8px);
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+.glass-card:hover {
+    box-shadow: 0 16px 48px rgba(31, 38, 135, 0.18);
+    transform: translateY(-4px) scale(1.02);
+}
+
 /* Section backgrounds for visual separation */
 .section-bg-light {
     background: #f8f9fa;
@@ -132,6 +146,9 @@
 /* Animate section titles */
 .section-title {
     animation: fadeInDown 1s;
+    border-bottom: 2px solid #e0e7ef;
+    padding-bottom: 0.3em;
+    margin-bottom: 1.2em;
 }
 @keyframes fadeInDown {
     from { opacity: 0; transform: translateY(-40px);}
@@ -145,6 +162,33 @@
 @keyframes fadeInUp {
     from { opacity: 0; transform: translateY(40px);}
     to { opacity: 1; transform: translateY(0);}
+}
+
+/* Amenity icon style */
+.amenity-icon {
+    color: #43a047;
+    font-size: 2rem;
+}
+
+/* Badge styles */
+.badge.bg-success, .badge.bg-info {
+    font-size: 1em;
+    padding: 0.5em 1em;
+    border-radius: 1em;
+}
+
+/* Room Card Enhancement */
+.room-card {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(67,160,71,0.06);
+    margin-bottom: 1.5rem;
+    transition: box-shadow 0.2s, transform 0.2s;
+    background: linear-gradient(120deg, #fff 80%, #e9f5ec 100%);
+}
+.room-card:hover {
+    box-shadow: 0 8px 32px rgba(67,160,71,0.13);
+    transform: translateY(-2px) scale(1.01);
 }
 
 /* ...add more custom styles as needed... */
