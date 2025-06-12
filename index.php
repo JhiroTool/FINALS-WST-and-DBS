@@ -10,24 +10,35 @@ if (isset($_POST['login'])) {
 
     $result = $db->loginUser($email, $password);
     if ($result['success']) {
-        $_SESSION['user_id'] = $result['user_id'];
-        $_SESSION['user_type'] = $result['user_type'];
-        $_SESSION['user_FN'] = $result['user_FN'];
-        // Set Cust_ID for customers
-        if ($result['user_type'] === 'user') {
-            $_SESSION['Cust_ID'] = $result['user_id'];
+        // Check if user is banned
+        if (!empty($result['is_banned'])) {
+            $sweetAlertConfig = "<script>
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Account Banned',
+                    text: 'Your account has been banned. Please contact support.'
+                });
+            </script>";
+        } else {
+            $_SESSION['user_id'] = $result['user_id'];
+            $_SESSION['user_type'] = $result['user_type'];
+            $_SESSION['user_FN'] = $result['user_FN'];
+            // Set Cust_ID for customers
+            if ($result['user_type'] === 'user') {
+                $_SESSION['Cust_ID'] = $result['user_id'];
+            }
+            $redirectUrl = $result['redirect'];
+            $sweetAlertConfig = "<script>
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Login Successful',
+                    text: 'Welcome, " . addslashes(htmlspecialchars($result['user_FN'])) . "!',
+                    confirmButtonText: 'Continue'
+                }).then(() => {
+                    window.location.href = '$redirectUrl';
+                });
+            </script>";
         }
-        $redirectUrl = $result['redirect'];
-        $sweetAlertConfig = "<script>
-            Swal.fire({
-                icon: 'success',
-                title: 'Login Successful',
-                text: 'Welcome, " . addslashes(htmlspecialchars($result['user_FN'])) . "!',
-                confirmButtonText: 'Continue'
-            }).then(() => {
-                window.location.href = '$redirectUrl';
-            });
-        </script>";
     } else {
         $sweetAlertConfig = "<script>
             Swal.fire({

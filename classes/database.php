@@ -145,57 +145,26 @@ class Database {
     }
 
     public function loginUser($email, $password) {
-        $conn = $this->getConnection();
-
-        // Check if user is a customer
-        $stmt = $conn->prepare("SELECT * FROM customer WHERE Cust_Email = ?");
+        $stmt = $this->conn->prepare("SELECT Cust_ID, Cust_FN, Cust_Password, is_banned FROM customer WHERE Cust_Email = ?");
         $stmt->bind_param("s", $email);
         $stmt->execute();
-        $customerResult = $stmt->get_result();
-        if ($customer = $customerResult->fetch_assoc()) {
-            if (password_verify($password, $customer['Cust_Password'])) {
-                $stmt->close();
+        $result = $stmt->get_result();
+        if ($row = $result->fetch_assoc()) {
+            if (password_verify($password, $row['Cust_Password'])) {
                 return [
                     'success' => true,
-                    'user_id' => $customer['Cust_ID'],
+                    'user_id' => $row['Cust_ID'],
+                    'user_FN' => $row['Cust_FN'],
                     'user_type' => 'user',
-                    'user_FN' => $customer['Cust_FN'],
+                    'is_banned' => $row['is_banned'],
                     'redirect' => 'homepage.php'
                 ];
             } else {
-                $stmt->close();
-                return ['success' => false, 'message' => 'Invalid password.'];
+                return ['success' => false, 'message' => 'Incorrect password.'];
             }
+        } else {
+            return ['success' => false, 'message' => 'Email not found.'];
         }
-        $stmt->close();
-
-        // Check if user is an admin
-        $stmt = $conn->prepare("SELECT * FROM administrator WHERE Admin_Email = ?");
-        $stmt->bind_param("s", $email);
-        $stmt->execute();
-        $adminResult = $stmt->get_result();
-        if ($admin = $adminResult->fetch_assoc()) {
-            if (password_verify($password, $admin['Admin_Password'])) {
-                $stmt->close();
-                return [
-                    'success' => true,
-                    'user_id' => $admin['Admin_ID'],
-                    'user_type' => 'admin',
-                    'user_FN' => 'Admin',
-                    'redirect' => 'admin_homepage.php'
-                ];
-            } else {
-                $stmt->close();
-                return ['success' => false, 'message' => 'Invalid password.'];
-            }
-        }
-        $stmt->close();
-
-        // If login fails
-        return [
-            'success' => false,
-            'message' => 'Invalid email or password.'
-        ];
     }
 
     public function getAllAmenities() {
