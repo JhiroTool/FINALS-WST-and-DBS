@@ -145,27 +145,51 @@ class Database {
     }
 
     public function loginUser($email, $password) {
-        $stmt = $this->conn->prepare("SELECT Cust_ID, Cust_FN, Cust_Password, is_banned FROM customer WHERE Cust_Email = ?");
-        $stmt->bind_param("s", $email);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        if ($row = $result->fetch_assoc()) {
-            if (password_verify($password, $row['Cust_Password'])) {
-                return [
-                    'success' => true,
-                    'user_id' => $row['Cust_ID'],
-                    'user_FN' => $row['Cust_FN'],
-                    'user_type' => 'user',
-                    'is_banned' => $row['is_banned'],
-                    'redirect' => 'homepage.php'
-                ];
-            } else {
-                return ['success' => false, 'message' => 'Incorrect password.'];
-            }
+    // Check customer table
+    $stmt = $this->conn->prepare("SELECT Cust_ID, Cust_FN, Cust_Password, is_banned FROM customer WHERE Cust_Email = ?");
+    $stmt->bind_param("s", $email);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($row = $result->fetch_assoc()) {
+        if (password_verify($password, $row['Cust_Password'])) {
+            return [
+                'success' => true,
+                'user_id' => $row['Cust_ID'],
+                'user_FN' => $row['Cust_FN'],
+                'user_type' => 'user',
+                'is_banned' => $row['is_banned'],
+                'redirect' => 'homepage.php'
+            ];
         } else {
-            return ['success' => false, 'message' => 'Email not found.'];
+            return ['success' => false, 'message' => 'Incorrect password.'];
         }
     }
+
+    // Check administrator table
+    $stmt = $this->conn->prepare("SELECT Admin_ID, Admin_Email, Admin_Password FROM administrator WHERE Admin_Email = ?");
+    $stmt->bind_param("s", $email);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($row = $result->fetch_assoc()) {
+        if (password_verify($password, $row['Admin_Password'])) {
+            return [
+                'success' => true,
+                'user_id' => $row['Admin_ID'],
+                'user_FN' => 'Admin', // You can add a name column if needed
+                'user_type' => 'admin',
+                'is_banned' => false,
+                'redirect' => 'admin_homepages.php'
+            ];
+        } else {
+            return ['success' => false, 'message' => 'Incorrect password.'];
+        }
+    }
+
+    return ['success' => false, 'message' => 'Email not found.'];
+}
+
 
     public function getAllAmenities() {
         $conn = $this->getConnection();
