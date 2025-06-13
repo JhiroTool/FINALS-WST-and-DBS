@@ -544,17 +544,35 @@ class Database {
 
     public function recordPayment($booking_id, $amount, $method) {
         $conn = $this->getConnection();
-        $stmt = $conn->prepare("INSERT INTO payment (Booking_ID, Payment_Amount, Payment_Method) VALUES (?, ?, ?)");
-        $stmt->bind_param("ids", $booking_id, $amount, $method);
-        if ($stmt->execute()) {
+        // Check if payment exists for this booking
+        $stmt = $conn->prepare("SELECT Payment_ID FROM payment WHERE Booking_ID = ?");
+        $stmt->bind_param("i", $booking_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $exists = $result->fetch_assoc();
+        $stmt->close();
+
+        if ($exists) {
+            // Update existing payment (no receipt image here)
+            $stmt = $conn->prepare("UPDATE payment SET Payment_Amount=?, Payment_Method=? WHERE Booking_ID=?");
+            $stmt->bind_param("dsi", $amount, $method, $booking_id);
+            $success = $stmt->execute();
+            $stmt->close();
+        } else {
+            // Insert new payment if not exists
+            $stmt = $conn->prepare("INSERT INTO payment (Booking_ID, Payment_Amount, Payment_Method) VALUES (?, ?, ?)");
+            $stmt->bind_param("ids", $booking_id, $amount, $method);
+            $success = $stmt->execute();
+            $stmt->close();
+        }
+
+        if ($success) {
             $update = $conn->prepare("UPDATE booking SET Booking_Status = 'Paid' WHERE Booking_ID = ?");
             $update->bind_param("i", $booking_id);
             $update->execute();
             $update->close();
-            $stmt->close();
             return true;
         } else {
-            $stmt->close();
             return false;
         }
     }
@@ -803,6 +821,135 @@ class Database {
         $promo = $result->fetch_assoc();
         $stmt->close();
         return $promo;
+    }
+
+    public function getLatestUnpaidBooking($cust_id) {
+        $conn = $this->getConnection();
+        $stmt = $conn->prepare("SELECT * FROM booking WHERE Cust_ID=? AND Booking_Status='Pending' ORDER BY Booking_IN DESC LIMIT 1");
+        $stmt->bind_param("i", $cust_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $booking = $result->fetch_assoc();
+        $stmt->close();
+        return $booking;
+    }
+
+    public function addPaymentWithReceipt($booking_id, $amount, $method, $filename) {
+        $conn = $this->getConnection();
+        $stmt = $conn->prepare("INSERT INTO payment (Booking_ID, Payment_Amount, Payment_Method, Receipt_Image, Payment_DOF) VALUES (?, ?, ?, ?, NOW())");
+        $stmt->bind_param("idss", $booking_id, $amount, $method, $filename);
+        $success = $stmt->execute();
+        $stmt->close();
+
+        // Update booking status to 'For Verification' if payment was inserted
+        if ($success) {
+            $update = $conn->prepare("UPDATE booking SET Booking_Status = 'For Verification' WHERE Booking_ID = ?");
+            $update->bind_param("i", $booking_id);
+            $update->execute();
+            $update->close();
+        }
+
+        return $success;
+    }
+
+    public function upsertPaymentWithReceipt($booking_id, $amount, $method, $filename) {
+        $conn = $this->getConnection();
+        // Check if payment exists for this booking
+        $stmt = $conn->prepare("SELECT Payment_ID FROM payment WHERE Booking_ID = ?");
+        $stmt->bind_param("i", $booking_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $exists = $result->fetch_assoc();
+        $stmt->close();
+
+        if ($exists) {
+            // Update existing payment
+            $stmt = $conn->prepare("UPDATE payment SET Payment_Amount=?, Payment_Method=?, Receipt_Image=?, Payment_DOF=NOW() WHERE Booking_ID=?");
+            $stmt->bind_param("dssi", $amount, $method, $filename, $booking_id);
+            $success = $stmt->execute();
+            $stmt->close();
+        } else {
+            // Insert new payment if not exists
+            $stmt = $conn->prepare("INSERT INTO payment (Booking_ID, Payment_Amount, Payment_Method, Receipt_Image, Payment_DOF) VALUES (?, ?, ?, ?, NOW())");
+            $stmt->bind_param("idss", $booking_id, $amount, $method, $filename);
+            $success = $stmt->execute();
+            $stmt->close();
+        }
+
+        // Update booking status to 'For Verification'
+        if ($success) {
+            $update = $conn->prepare("UPDATE booking SET Booking_Status = 'For Verification' WHERE Booking_ID = ?");
+            $update->bind_param("i", $booking_id);
+            $update->execute();
+            $update->close();
+        }
+
+        return $success;
+    }
+
+    public function handleAdminPayment($booking_id, $amount, $method, $file) {
+        $filename = '';
+        // Handle file upload if there's a file
+        if (isset($file) && $file['error'] === UPLOAD_ERR_OK) {
+            $uploadFileDir = './uploaded_receipts/';
+            if (!is_dir($uploadFileDir)) {
+                mkdir($uploadFileDir, 0777, true);
+            }
+            $fileName = basename($file['name']);
+            $dest_path = $uploadFileDir . $fileName;
+            if (move_uploaded_file($file['tmp_name'], $dest_path)) {
+                $filename = $fileName;
+            } else {
+                return ['success' => false, 'message' => "Failed to move uploaded file."];
+            }
+        }
+
+        // Upsert payment
+        $conn = $this->getConnection();
+        $stmt = $conn->prepare("SELECT Payment_ID FROM payment WHERE Booking_ID = ?");
+        $stmt->bind_param("i", $booking_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $exists = $result->fetch_assoc();
+        $stmt->close();
+
+        if ($exists) {
+            $stmt = $conn->prepare("UPDATE payment SET Payment_Amount=?, Payment_Method=?, Receipt_Image=?, Payment_DOF=NOW() WHERE Booking_ID=?");
+            $stmt->bind_param("dssi", $amount, $method, $filename, $booking_id);
+            $success = $stmt->execute();
+            $stmt->close();
+        } else {
+            $stmt = $conn->prepare("INSERT INTO payment (Booking_ID, Payment_Amount, Payment_Method, Receipt_Image, Payment_DOF) VALUES (?, ?, ?, ?, NOW())");
+            $stmt->bind_param("idss", $booking_id, $amount, $method, $filename);
+            $success = $stmt->execute();
+            $stmt->close();
+        }
+
+        if ($success) {
+            return ['success' => true, 'message' => "Payment recorded successfully!"];
+        } else {
+            return ['success' => false, 'message' => "Failed to record payment."];
+        }
+    }
+
+    public function getPaymentByBookingId($booking_id) {
+        $conn = $this->getConnection();
+        $stmt = $conn->prepare("SELECT * FROM payment WHERE Booking_ID = ?");
+        $stmt->bind_param("i", $booking_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $payment = $result->fetch_assoc();
+        $stmt->close();
+        return $payment;
+    }
+
+    public function markBookingAsPaid($booking_id) {
+        $conn = $this->getConnection();
+        $stmt = $conn->prepare("UPDATE booking SET Booking_Status = 'Paid' WHERE Booking_ID = ?");
+        $stmt->bind_param("i", $booking_id);
+        $success = $stmt->execute();
+        $stmt->close();
+        return $success;
     }
 }
 ?>

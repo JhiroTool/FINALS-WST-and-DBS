@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once('classes/database.php');
+require_once('classes/functions.php');
 $db = new Database();
 $conn = $db->getConnection();
 
@@ -224,6 +225,89 @@ $services = $db->getAllServices();
                     <div class="col-12 text-muted">No feedback yet.</div>
                 <?php endif; ?>
             </div>
+        </section>
+
+        <!-- PAYMENT SECTION -->
+        <?php
+        // PAYMENT SECTION
+        $paymentMsg = '';
+        if (isset($_POST['submit_payment'])) {
+            $cust_id = $_SESSION['user_id'];
+            $result = handlePaymentUpload($db, $cust_id, $_POST, $_FILES);
+            $paymentMsg = '<div class="alert alert-' . $result['status'] . ' mt-2">' . $result['msg'] . '</div>';
+        }
+        ?>
+
+        <!-- PAYMENT SECTION -->
+        <section class="minimal-section" id="payment">
+            <h2 class="section-title">Upload Payment Receipt</h2>
+            <?= $paymentMsg ?>
+            <?php
+            $cust_id = $_SESSION['user_id'];
+            $latestBooking = $db->getLatestUnpaidBooking($cust_id);
+
+            if ($latestBooking) {
+                $booking_id = $latestBooking['Booking_ID'];
+                $booking_time = strtotime($latestBooking['Booking_IN']);
+                $now = time();
+                $timeout = 12 * 60 * 60; // 12 hours in seconds
+                $time_left = ($booking_time + $timeout) - $now;
+
+                if ($time_left > 0 && $latestBooking['Booking_Status'] === 'Pending') {
+                    // Payment form
+                    ?>
+                    <form method="post" enctype="multipart/form-data" class="mb-3">
+                        <input type="hidden" name="booking_id" value="<?= $booking_id ?>">
+                        <div class="mb-2">
+                            <label for="payment_amount" class="form-label">Amount</label>
+                            <input type="number" name="payment_amount" id="payment_amount" class="form-control" value="<?= htmlspecialchars($latestBooking['Booking_Cost']) ?>" readonly>
+                        </div>
+                        <div class="mb-2">
+                            <label for="payment_method" class="form-label">Payment Method</label>
+                            <select name="payment_method" id="payment_method" class="form-select" required>
+                                <option value="" disabled selected>Select payment method</option>
+                                <option value="Cash">Cash</option>
+                                <option value="Credit Card">Credit Card</option>
+                                <option value="GCash">GCash</option>
+                                <option value="Bank Transfer">Bank Transfer</option>
+                            </select>
+                        </div>
+                        <div class="mb-2">
+                            <label for="receipt_image" class="form-label">Upload Receipt Image</label>
+                            <input type="file" name="receipt_image" id="receipt_image" class="form-control" accept="image/*" required>
+                        </div>
+                        <button type="submit" name="submit_payment" class="btn btn-primary">Submit Payment</button>
+                        <div class="mt-2 text-muted small">
+                            Time left to upload: <span id="timeLeft"></span>
+                        </div>
+                    </form>
+                    <script>
+                    // Countdown timer
+                    let timeLeft = <?= $time_left ?>;
+                    function updateTimer() {
+                        if (timeLeft <= 0) {
+                            document.getElementById('timeLeft').textContent = "Time expired!";
+                            document.querySelector('form[method="post"]').style.display = "none";
+                            return;
+                        }
+                        let hours = Math.floor(timeLeft / 3600);
+                        let minutes = Math.floor((timeLeft % 3600) / 60);
+                        let seconds = timeLeft % 60;
+                        document.getElementById('timeLeft').textContent =
+                            hours + "h " + minutes + "m " + seconds + "s";
+                        timeLeft--;
+                        setTimeout(updateTimer, 1000);
+                    }
+                    updateTimer();
+                    </script>
+                    <?php
+                } else {
+                    echo '<div class="alert alert-warning">Payment upload time has expired for your latest booking.</div>';
+                }
+            } else {
+                echo '<div class="alert alert-info">No pending bookings found for payment.</div>';
+            }
+            ?>
         </section>
     </div>
 
