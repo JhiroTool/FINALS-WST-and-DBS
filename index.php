@@ -81,11 +81,7 @@ if (isset($_POST['login'])) {
       </div>
       <button type="submit" name="login" class="btn btn-primary w-100 py-2">Login</button>
       <div class="text-center mt-4">
-        <a href="admin_homepage.php" class="text-decoration-none">Access Admin Homepage (For now)</a><br>
         <a href="registration.php" class="text-decoration-none">Don't have an account? Register here</a>
-      </div>
-      <div class="text-center mt-2">
-        <a href="admin_registration.php" class="text-decoration-none">Register as Admin</a>
       </div>
     </form>
     <script src="./bootstrap-5.3.3-dist/js/bootstrap.js"></script>

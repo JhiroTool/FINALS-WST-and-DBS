@@ -61,24 +61,71 @@ $services = $db->getAllServices();
             </div>
         </section>
 
-        <!-- ROOMS SECTION (Dynamic) -->
+        <!-- ROOMS SECTION (Redesigned) -->
         <section class="minimal-section" id="rooms">
-            <h2 class="section-title">Available Rooms</h2>
-            <div class="row">
-                <?php foreach($rooms as $room): ?>
-                <div class="col-md-6">
-                    <div class="card room-card p-3 mb-3">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h5 class="mb-0"><?= htmlspecialchars($room['Room_Type']) ?></h5>
-                            <span class="badge bg-success fs-6">
-                                ₱<?= number_format($db->getRoomPrice($room['Room_ID'], $room['Room_Rate']), 2) ?>
-                            </span>
+            <h2 class="section-title mb-4">Rooms</h2>
+            <div class="row g-4">
+                <?php
+                $hasAvailable = false;
+                $hasUnavailable = false;
+                foreach ($rooms as $room):
+                    $isAvailable = isset($room['Room_Status']) && strtolower($room['Room_Status']) === 'available';
+                    if ($isAvailable) $hasAvailable = true;
+                    else $hasUnavailable = true;
+                endforeach;
+                ?>
+
+                <!-- Available Rooms -->
+                <?php if ($hasAvailable): ?>
+                    <h4 class="mb-3 text-success"><i class="fa fa-door-open"></i> Available Rooms</h4>
+                    <?php foreach ($rooms as $room): ?>
+                        <?php if (isset($room['Room_Status']) && strtolower($room['Room_Status']) === 'available'): ?>
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card border-success shadow-sm h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h5 class="card-title mb-0"><?= htmlspecialchars($room['Room_Type']) ?></h5>
+                                        <span class="badge bg-success fs-6">
+                                            ₱<?= number_format($db->getRoomPrice($room['Room_ID'], $room['Room_Rate']), 2) ?>
+                                        </span>
+                                    </div>
+                                    <div class="mb-2 text-muted">Capacity: <?= $room['Room_Cap'] ?></div>
+                                    <span class="badge bg-success mb-2">Available</span>
+                                    <a href="book_room.php?id=<?= $room['Room_ID'] ?>" class="btn btn-success w-100">Book Now</a>
+                                </div>
+                            </div>
                         </div>
-                        <div class="mb-2 text-muted">Capacity: <?= $room['Room_Cap'] ?></div>
-                        <a href="book_room.php?id=<?= $room['Room_ID'] ?>" class="btn btn-success btn-sm w-100">Book</a>
-                    </div>
-                </div>
-                <?php endforeach; ?>
+                        <?php endif; ?>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <div class="col-12 text-muted mb-4">No available rooms at the moment.</div>
+                <?php endif; ?>
+
+                <!-- Unavailable Rooms -->
+                <?php if ($hasUnavailable): ?>
+                    <h4 class="mb-3 mt-5 text-danger"><i class="fa fa-door-closed"></i> Unavailable Rooms</h4>
+                    <?php foreach ($rooms as $room): ?>
+                        <?php if (isset($room['Room_Status']) && strtolower($room['Room_Status']) !== 'available'): ?>
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card border-danger shadow-sm h-100 bg-light">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h5 class="card-title mb-0"><?= htmlspecialchars($room['Room_Type']) ?></h5>
+                                        <span class="badge bg-secondary fs-6">
+                                            ₱<?= number_format($db->getRoomPrice($room['Room_ID'], $room['Room_Rate']), 2) ?>
+                                        </span>
+                                    </div>
+                                    <div class="mb-2 text-muted">Capacity: <?= $room['Room_Cap'] ?></div>
+                                    <span class="badge bg-danger mb-2">Unavailable</span>
+                                    <button class="btn btn-secondary w-100" disabled>Unavailable</button>
+                                </div>
+                            </div>
+                        </div>
+                        <?php endif; ?>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <div class="col-12 text-muted">All rooms are available!</div>
+                <?php endif; ?>
             </div>
         </section>
 

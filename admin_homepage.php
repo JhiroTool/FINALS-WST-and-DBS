@@ -69,6 +69,7 @@ $servicePromos = $db->getAllServicePromos();
                   <th>Type</th>
                   <th>Rate</th>
                   <th>Capacity</th>
+                  <th>Status</th> <!-- Added Status column -->
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -79,6 +80,13 @@ $servicePromos = $db->getAllServicePromos();
                   <td><?= htmlspecialchars($room['Room_Type']) ?></td>
                   <td><?= number_format($room['Room_Rate'], 2) ?></td>
                   <td><?= $room['Room_Cap'] ?></td>
+                  <td>
+                    <?php if (isset($room['Room_Status']) && strtolower($room['Room_Status']) === 'available'): ?>
+                      <span class="badge bg-success">Available</span>
+                    <?php else: ?>
+                      <span class="badge bg-danger">Unavailable</span>
+                    <?php endif; ?>
+                  </td>
                   <td>
                     <a href="update_room.php?id=<?= $room['Room_ID'] ?>" class="btn btn-warning btn-sm"><i class="bi bi-pencil-square"></i></a>
                     <a href="delete_room.php?id=<?= $room['Room_ID'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Delete this room?');"><i class="bi bi-trash"></i></a>

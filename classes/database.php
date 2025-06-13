@@ -210,15 +210,8 @@ class Database {
 
     public function getAllRooms() {
         $conn = $this->getConnection();
-        $result = $conn->query("SELECT * FROM room");
-        $rooms = [];
-        if ($result) {
-            while ($row = $result->fetch_assoc()) {
-                $rooms[] = $row;
-            }
-            $result->free();
-        }
-        return $rooms;
+        $result = $conn->query("SELECT Room_ID, Room_Type, Room_Rate, Room_Cap, Room_Status FROM room");
+        return $result->fetch_all(MYSQLI_ASSOC);
     }
 
     public function getAmenityById($id) {
@@ -949,7 +942,33 @@ class Database {
         $stmt->bind_param("i", $booking_id);
         $success = $stmt->execute();
         $stmt->close();
+
+        if ($success) {
+            // Mark the room as unavailable
+            $this->markRoomAsUnavailableByBooking($booking_id);
+        }
         return $success;
+    }
+
+    public function markRoomAsUnavailableByBooking($booking_id) {
+        $conn = $this->getConnection();
+        // Get the Room_ID for this booking
+        $stmt = $conn->prepare("SELECT Room_ID FROM bookingroom WHERE Booking_ID = ?");
+        $stmt->bind_param("i", $booking_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($row = $result->fetch_assoc()) {
+            $room_id = $row['Room_ID'];
+            $stmt->close();
+            // Update the room status to 'Unavailable'
+            $stmt2 = $conn->prepare("UPDATE room SET Room_Status = 'Unavailable' WHERE Room_ID = ?");
+            $stmt2->bind_param("i", $room_id);
+            $stmt2->execute();
+            $stmt2->close();
+            return true;
+        }
+        $stmt->close();
+        return false;
     }
 }
 ?>
