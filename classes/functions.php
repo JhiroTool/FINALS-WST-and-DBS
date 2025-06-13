@@ -6,16 +6,12 @@ function handlePaymentUpload($db, $cust_id, $post, $files) {
         return ['status' => 'info', 'msg' => 'No pending bookings found for payment.'];
     }
 
-    $booking_id = $latestBooking['Booking_ID'];
-    $booking_time = strtotime($latestBooking['Booking_IN']);
-    $now = time();
-    $timeout = 12 * 60 * 60; // 12 hours
-    $time_left = ($booking_time + $timeout) - $now;
-
-    if ($time_left <= 0 || $latestBooking['Booking_Status'] !== 'Pending') {
+    // Only check payment window for customers
+    if (!$db->isPaymentWindowOpen($latestBooking['Booking_ID'])) {
         return ['status' => 'warning', 'msg' => 'Payment upload time has expired for your latest booking.'];
     }
 
+    $booking_id = $latestBooking['Booking_ID'];
     $amount = floatval($post['payment_amount']);
     $method = $post['payment_method'];
     $receipt_image = $files['receipt_image'];

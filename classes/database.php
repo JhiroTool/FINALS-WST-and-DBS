@@ -970,5 +970,23 @@ class Database {
         $stmt->close();
         return false;
     }
+
+    public function isPaymentWindowOpen($booking_id) {
+        $conn = $this->getConnection();
+        $stmt = $conn->prepare("SELECT Booking_IN, Booking_Status FROM booking WHERE Booking_ID = ?");
+        $stmt->bind_param("i", $booking_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $booking = $result->fetch_assoc();
+        $stmt->close();
+
+        if (!$booking) return false;
+
+        $now = time();
+        $booking_in = strtotime($booking['Booking_IN']);
+
+        // Allow payment upload until check-in time (Booking_IN) and if status is Pending
+        return ($now < $booking_in && $booking['Booking_Status'] === 'Pending');
+    }
 }
 ?>
