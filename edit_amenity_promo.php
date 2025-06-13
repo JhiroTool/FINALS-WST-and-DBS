@@ -1,17 +1,11 @@
 <?php
 require_once('classes/database.php');
 $db = new Database();
-$conn = $db->getConnection();
 
 $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 $message = "";
 
-$stmt = $conn->prepare("SELECT * FROM amenityprices WHERE AP_ID = ?");
-$stmt->bind_param("i", $id);
-$stmt->execute();
-$result = $stmt->get_result();
-$promo = $result->fetch_assoc();
-$stmt->close();
+$promo = $db->getAmenityPromoById($id);
 
 if (!$promo) {
     die("Promo not found.");
@@ -22,15 +16,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $from = $_POST['prom_from'];
     $to = $_POST['prom_to'];
 
-    $stmt = $conn->prepare("UPDATE amenityprices SET Price=?, PromValidF=?, PromValidT=? WHERE AP_ID=?");
-    $stmt->bind_param("dssi", $price, $from, $to, $id);
-    if ($stmt->execute()) {
+    if ($db->updateAmenityPromo($id, $price, $from, $to)) {
         header("Location: admin_homepage.php#amenity-promos");
         exit();
     } else {
         $message = "<div class='alert alert-danger'>Failed to update promo.</div>";
     }
-    $stmt->close();
 }
 ?>
 <!DOCTYPE html>

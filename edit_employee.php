@@ -13,18 +13,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $lname = $_POST['lname'];
     $email = $_POST['email'];
     $phone = $_POST['phone'];
-    $stmt = $db->conn->prepare("UPDATE employee SET Emp_FN=?, Emp_LN=?, Emp_Email=?, Emp_Phone=? WHERE Emp_ID=?");
-    $stmt->bind_param("ssssi", $fname, $lname, $email, $phone, $id);
-    $stmt->execute();
-    header("Location: admin_homepage.php#employees");
-    exit();
+    if ($db->updateEmployee($id, $fname, $lname, $email, $phone)) {
+        header("Location: admin_homepage.php#employees");
+        exit();
+    }
 }
 
-$stmt = $db->conn->prepare("SELECT * FROM employee WHERE Emp_ID=?");
-$stmt->bind_param("i", $id);
-$stmt->execute();
-$result = $stmt->get_result();
-$employee = $result->fetch_assoc();
+$employee = $db->getEmployeeById($id);
 ?>
 <!DOCTYPE html>
 <html>

@@ -1,0 +1,23 @@
+.payment-glass-card {
+    max-width: 480px;
+    margin: 48px auto 0 auto;
+    background: rgba(255,255,255,0.82);
+    border-radius: 1.25rem;
+    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.13);
+    border: 1.5px solid rgba(120,120,120,0.08);
+    backdrop-filter: blur(8px);
+    padding: 2.5rem 2rem 2rem 2rem;
+    animation: fadeInUp 0.7s;
+}
+.payment-glass-card h2 {
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    color: #2563eb;
+    letter-spacing: 1px;
+}
+.btn-action {
+    width: 100%;
+}
+.back-btn {
+    margin-bottom: 1.5rem;
+}

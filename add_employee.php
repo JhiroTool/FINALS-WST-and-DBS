@@ -10,11 +10,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $phone = $_POST['phone'];
     $admin_id = $_SESSION['user_id']; // assuming admin is logged in
 
-    $stmt = $db->conn->prepare("INSERT INTO employee (Emp_FN, Emp_LN, Emp_Email, Emp_Phone, Admin_ID) VALUES (?, ?, ?, ?, ?)");
-    $stmt->bind_param("ssssi", $fname, $lname, $email, $phone, $admin_id);
-    $stmt->execute();
-    header("Location: admin_homepage.php#employees");
-    exit();
+    if ($db->addEmployee($fname, $lname, $email, $phone, $admin_id)) {
+        header("Location: admin_homepage.php#employees");
+        exit();
+    } else {
+        $error = "Failed to add employee.";
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -53,6 +54,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <button type="submit" class="btn btn-success">Add</button>
             <a href="admin_homepage.php#employees" class="btn btn-secondary ms-2">Back</a>
           </form>
+          <?php if (isset($error)): ?>
+            <div class="alert alert-danger mt-3">
+              <?= $error ?>
+            </div>
+          <?php endif; ?>
         </div>
       </div>
     </div>

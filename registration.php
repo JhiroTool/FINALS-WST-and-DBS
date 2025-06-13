@@ -84,72 +84,6 @@ if (isset($_POST['register'])) {
   <link rel="stylesheet" href="assets/css/login.css">
   <link rel="stylesheet" href="assets/css/registration.css">
   <title>Customer Registration</title>
-  <style>
-    .custom-container {
-      padding: 2rem 1.2rem 1.2rem 1.2rem;
-      max-width: 350px;
-      background: rgba(255,255,255,0.98);
-      border-radius: 1.5rem;
-      box-shadow: 0 8px 32px rgba(60, 60, 120, 0.18);
-      margin-top: 3.5rem;
-    }
-    .register-title {
-      color: #6366f1;
-      font-weight: 800;
-      letter-spacing: 1px;
-      margin-bottom: 1.2rem;
-      text-shadow: 0 2px 8px #a5b4fc33;
-    }
-    .form-group label {
-      font-size: 0.98rem;
-      color: #6366f1;
-      font-weight: 600;
-      margin-bottom: 0.2rem;
-    }
-    .form-control {
-      font-size: 1rem;
-      border-radius: 0.8rem;
-      border: 1.5px solid #e0e7ff;
-      background: #f3f4f6;
-      transition: border-color 0.2s, box-shadow 0.2s;
-      margin-bottom: 0.7rem;
-    }
-    .form-control:focus {
-      border-color: #6366f1;
-      box-shadow: 0 0 0 0.13rem #6366f133;
-      background: #fff;
-    }
-    .btn-primary {
-      margin-top: 0.2rem;
-      font-size: 1.08rem;
-      padding: 0.7rem 0;
-      border-radius: 2rem;
-      font-weight: 700;
-      letter-spacing: 1px;
-      background: linear-gradient(90deg, #6366f1 60%, #818cf8 100%);
-      border: none;
-      box-shadow: 0 4px 16px rgba(99,102,241,0.13);
-      transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
-    }
-    .btn-primary:hover, .btn-primary:focus {
-      background: linear-gradient(90deg, #4338ca 60%, #6366f1 100%);
-      box-shadow: 0 8px 24px rgba(99,102,241,0.18);
-      transform: translateY(-2px) scale(1.03);
-    }
-    .text-center a {
-      color: #6366f1;
-      font-weight: 500;
-      transition: color 0.2s;
-      font-size: 0.97rem;
-    }
-    .text-center a:hover {
-      color: #4338ca;
-      text-decoration: underline;
-    }
-    @media (max-width: 400px) {
-      .custom-container { padding: 1rem 0.3rem 0.7rem 0.3rem; }
-    }
-  </style>
 </head>
 <body>
   <div class="container custom-container shadow">
@@ -196,7 +130,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function checkField(type, value) {
         const data = {};
         data[type] = value;
-        fetch('check_customer.php', {
+        fetch('./AJAX/check_customer.php', {
             method: 'POST',
             headers: {'Content-Type': 'application/x-www-form-urlencoded'},
             body: new URLSearchParams(data)

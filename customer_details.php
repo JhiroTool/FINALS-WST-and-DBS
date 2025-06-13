@@ -7,11 +7,7 @@ if (!isset($_GET['id'])) {
     exit();
 }
 $id = intval($_GET['id']);
-$stmt = $db->conn->prepare("SELECT * FROM customer WHERE Cust_ID = ?");
-$stmt->bind_param("i", $id);
-$stmt->execute();
-$result = $stmt->get_result();
-$customer = $result->fetch_assoc();
+$customer = $db->getCustomerById($id);
 ?>
 <!DOCTYPE html>
 <html>

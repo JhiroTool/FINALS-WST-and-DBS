@@ -152,7 +152,11 @@ class Database {
     $result = $stmt->get_result();
 
     if ($row = $result->fetch_assoc()) {
-        if (password_verify($password, $row['Cust_Password'])) {
+        $db_password = $row['Cust_Password'];
+        if (
+            (strlen($db_password) > 20 && password_verify($password, $db_password)) // hashed
+            || $password === $db_password // plain text fallback (not secure, for legacy only)
+        ) {
             return [
                 'success' => true,
                 'user_id' => $row['Cust_ID'],
@@ -180,7 +184,7 @@ class Database {
                 'user_FN' => 'Admin', // You can add a name column if needed
                 'user_type' => 'admin',
                 'is_banned' => false,
-                'redirect' => 'admin_homepages.php'
+                'redirect' => 'admin_homepage.php'
             ];
         } else {
             return ['success' => false, 'message' => 'Incorrect password.'];
@@ -299,6 +303,31 @@ class Database {
         return $result ? $booking_id : false;
     }
 
+    public function addBookingWithRoom($cust_id, $emp_id, $checkIn, $checkOut, $cost, $status, $guests, $room_id) {
+        $conn = $this->getConnection();
+        $stmt = $conn->prepare(
+            "INSERT INTO booking (Cust_ID, Emp_ID, Booking_IN, Booking_Out, Booking_Cost, Booking_Status, Guests)
+             VALUES (?, ?, ?, ?, ?, ?, ?)"
+        );
+        $stmt->bind_param("iissdsi", $cust_id, $emp_id, $checkIn, $checkOut, $cost, $status, $guests);
+        if (!$stmt->execute()) {
+            $stmt->close();
+            return false;
+        }
+        $booking_id = $stmt->insert_id;
+        $stmt->close();
+
+        $stmt2 = $conn->prepare("INSERT INTO bookingroom (Booking_ID, Room_ID) VALUES (?, ?)");
+        $stmt2->bind_param("ii", $booking_id, $room_id);
+        if (!$stmt2->execute()) {
+            $stmt2->close();
+            return false;
+        }
+        $stmt2->close();
+
+        return $booking_id;
+    }
+
     public function getAllEmployees() {
         $stmt = $this->conn->prepare("SELECT * FROM employee");
         $stmt->execute();
@@ -328,32 +357,43 @@ class Database {
         return $result;
     }
 
+    public function getLatestBookingId($cust_id) {
+        $conn = $this->getConnection();
+        $stmt = $conn->prepare("SELECT Booking_ID FROM booking WHERE Cust_ID = ? ORDER BY Booking_ID DESC LIMIT 1");
+        $stmt->bind_param("i", $cust_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+        $stmt->close();
+        return $row ? $row['Booking_ID'] : null;
+    }
+
     public function addFeedback($cust_id, $booking_id, $rating, $comment) {
         $conn = $this->getConnection();
         $stmt = $conn->prepare("INSERT INTO feedback (Cust_ID, Booking_ID, Feed_Rating, Feed_Comment) VALUES (?, ?, ?, ?)");
         $stmt->bind_param("iids", $cust_id, $booking_id, $rating, $comment);
-        $result = $stmt->execute();
+        $success = $stmt->execute();
         $stmt->close();
-        return $result;
+        return $success;
     }
 
-    public function getRecentFeedback($limit = 10) {
+    public function getRecentFeedback($limit = 5) {
         $conn = $this->getConnection();
-        $sql = "SELECT f.Feed_Rating, f.Feed_Comment, f.Feed_DOF, c.Cust_FN 
-                FROM feedback f 
-                JOIN customer c ON f.Cust_ID = c.Cust_ID 
-                ORDER BY f.Feed_DOF DESC 
-                LIMIT ?";
-        $stmt = $conn->prepare($sql);
+        $stmt = $conn->prepare(
+            "SELECT f.Feed_Rating, f.Feed_Comment, f.Feed_DOF, c.Cust_FN 
+             FROM feedback f 
+             JOIN customer c ON f.Cust_ID = c.Cust_ID 
+             ORDER BY f.Feed_DOF DESC LIMIT ?"
+        );
         $stmt->bind_param("i", $limit);
         $stmt->execute();
         $result = $stmt->get_result();
-        $feedbacks = [];
+        $feedback = [];
         while ($row = $result->fetch_assoc()) {
-            $feedbacks[] = $row;
+            $feedback[] = $row;
         }
         $stmt->close();
-        return $feedbacks;
+        return $feedback;
     }
 
     public function getAllServices() {
@@ -479,6 +519,257 @@ class Database {
         }
         $stmt->close();
         return $default_price;
+    }
+
+    public function customerExists($email = null, $phone = null) {
+        $conn = $this->getConnection();
+        if ($email && $phone) {
+            $stmt = $conn->prepare("SELECT Cust_ID, Cust_Email, Cust_Phone FROM customer WHERE Cust_Email = ? OR Cust_Phone = ?");
+            $stmt->bind_param("ss", $email, $phone);
+        } elseif ($email) {
+            $stmt = $conn->prepare("SELECT Cust_ID, Cust_Email FROM customer WHERE Cust_Email = ?");
+            $stmt->bind_param("s", $email);
+        } elseif ($phone) {
+            $stmt = $conn->prepare("SELECT Cust_ID, Cust_Phone FROM customer WHERE Cust_Phone = ?");
+            $stmt->bind_param("s", $phone);
+        } else {
+            return false;
+        }
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $exists = $result->num_rows > 0 ? $result->fetch_assoc() : false;
+        $stmt->close();
+        return $exists;
+    }
+
+    public function recordPayment($booking_id, $amount, $method) {
+        $conn = $this->getConnection();
+        $stmt = $conn->prepare("INSERT INTO payment (Booking_ID, Payment_Amount, Payment_Method) VALUES (?, ?, ?)");
+        $stmt->bind_param("ids", $booking_id, $amount, $method);
+        if ($stmt->execute()) {
+            $update = $conn->prepare("UPDATE booking SET Booking_Status = 'Paid' WHERE Booking_ID = ?");
+            $update->bind_param("i", $booking_id);
+            $update->execute();
+            $update->close();
+            $stmt->close();
+            return true;
+        } else {
+            $stmt->close();
+            return false;
+        }
+    }
+
+    public function getBookingAmount($booking_id) {
+        $conn = $this->getConnection();
+        $stmt = $conn->prepare("SELECT Booking_Cost FROM booking WHERE Booking_ID = ?");
+        $stmt->bind_param("i", $booking_id);
+        $stmt->execute();
+        $stmt->bind_result($amount);
+        $result = $stmt->fetch() ? $amount : null;
+        $stmt->close();
+        return $result;
+    }
+
+    public function getServicePromoById($id) {
+        $conn = $this->getConnection();
+        $stmt = $conn->prepare("SELECT * FROM serviceprices WHERE SP_ID = ?");
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $promo = $result->fetch_assoc();
+        $stmt->close();
+        return $promo;
+    }
+
+    public function updateServicePromo($id, $price, $from, $to) {
+        $conn = $this->getConnection();
+        $stmt = $conn->prepare("UPDATE serviceprices SET Price=?, PromValidF=?, PromValidT=? WHERE SP_ID=?");
+        $stmt->bind_param("dssi", $price, $from, $to, $id);
+        $success = $stmt->execute();
+        $stmt->close();
+        return $success;
+    }
+
+    public function getRoomPromoById($id) {
+        $conn = $this->getConnection();
+        $stmt = $conn->prepare("SELECT * FROM roomprices WHERE Price_ID = ?");
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $promo = $result->fetch_assoc();
+        $stmt->close();
+        return $promo;
+    }
+
+    public function updateRoomPromo($id, $price, $from, $to) {
+        $conn = $this->getConnection();
+        $stmt = $conn->prepare("UPDATE roomprices SET Price=?, PromValidF=?, PromValidT=? WHERE Price_ID=?");
+        $stmt->bind_param("dssi", $price, $from, $to, $id);
+        $success = $stmt->execute();
+        $stmt->close();
+        return $success;
+    }
+
+    public function getEmployeeById($id) {
+        $conn = $this->getConnection();
+        $stmt = $conn->prepare("SELECT * FROM employee WHERE Emp_ID=?");
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $employee = $result->fetch_assoc();
+        $stmt->close();
+        return $employee;
+    }
+
+    public function updateEmployee($id, $fname, $lname, $email, $phone) {
+        $conn = $this->getConnection();
+        $stmt = $conn->prepare("UPDATE employee SET Emp_FN=?, Emp_LN=?, Emp_Email=?, Emp_Phone=? WHERE Emp_ID=?");
+        $stmt->bind_param("ssssi", $fname, $lname, $email, $phone, $id);
+        $success = $stmt->execute();
+        $stmt->close();
+        return $success;
+    }
+
+    public function getAmenityPromoById($id) {
+        $conn = $this->getConnection();
+        $stmt = $conn->prepare("SELECT * FROM amenityprices WHERE AP_ID = ?");
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $promo = $result->fetch_assoc();
+        $stmt->close();
+        return $promo;
+    }
+
+    public function updateAmenityPromo($id, $price, $from, $to) {
+        $conn = $this->getConnection();
+        $stmt = $conn->prepare("UPDATE amenityprices SET Price=?, PromValidF=?, PromValidT=? WHERE AP_ID=?");
+        $stmt->bind_param("dssi", $price, $from, $to, $id);
+        $success = $stmt->execute();
+        $stmt->close();
+        return $success;
+    }
+
+    public function deleteServicePromo($id) {
+        $conn = $this->getConnection();
+        $stmt = $conn->prepare("DELETE FROM serviceprices WHERE SP_ID = ?");
+        $stmt->bind_param("i", $id);
+        $success = $stmt->execute();
+        $stmt->close();
+        return $success;
+    }
+
+    public function deleteRoomPromo($id) {
+        $conn = $this->getConnection();
+        $stmt = $conn->prepare("DELETE FROM roomprices WHERE RP_ID = ?");
+        $stmt->bind_param("i", $id);
+        $success = $stmt->execute();
+        $stmt->close();
+        return $success;
+    }
+
+    public function deleteAmenityPromo($id) {
+        $conn = $this->getConnection();
+        $stmt = $conn->prepare("DELETE FROM amenityprices WHERE AP_ID = ?");
+        $stmt->bind_param("i", $id);
+        $success = $stmt->execute();
+        $stmt->close();
+        return $success;
+    }
+
+    public function getCustomerById($id) {
+        $conn = $this->getConnection();
+        $stmt = $conn->prepare("SELECT * FROM customer WHERE Cust_ID = ?");
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $customer = $result->fetch_assoc();
+        $stmt->close();
+        return $customer;
+    }
+
+    public function banCustomer($id) {
+        $conn = $this->getConnection();
+        $stmt = $conn->prepare("UPDATE customer SET is_banned = 1 WHERE Cust_ID = ?");
+        $stmt->bind_param("i", $id);
+        $success = $stmt->execute();
+        $stmt->close();
+        return $success;
+    }
+
+    public function assignTaskToEmployee($id, $task) {
+        $conn = $this->getConnection();
+        $stmt = $conn->prepare("UPDATE employee SET Emp_Role=? WHERE Emp_ID=?");
+        $stmt->bind_param("si", $task, $id);
+        $success = $stmt->execute();
+        $stmt->close();
+        return $success;
+    }
+
+    public function getAllAmenityPromos() {
+        $conn = $this->getConnection();
+        $result = $conn->query("SELECT ap.*, a.Amenity_Name FROM amenityprices ap JOIN amenity a ON ap.Amenity_ID = a.Amenity_ID ORDER BY ap.PromValidF DESC");
+        $promos = [];
+        while ($row = $result->fetch_assoc()) {
+            $promos[] = $row;
+        }
+        return $promos;
+    }
+
+    public function getAllRoomPromos() {
+        $conn = $this->getConnection();
+        $result = $conn->query("SELECT rp.*, r.Room_Type FROM roomprices rp JOIN room r ON rp.Room_ID = r.Room_ID ORDER BY rp.PromValidF DESC");
+        $promos = [];
+        while ($row = $result->fetch_assoc()) {
+            $promos[] = $row;
+        }
+        return $promos;
+    }
+
+    public function getAllServicePromos() {
+        $conn = $this->getConnection();
+        $result = $conn->query("SELECT sp.*, s.Service_Name FROM serviceprices sp JOIN service s ON sp.Service_ID = s.Service_ID ORDER BY sp.PromValidF DESC");
+        $promos = [];
+        while ($row = $result->fetch_assoc()) {
+            $promos[] = $row;
+        }
+        return $promos;
+    }
+
+    public function addServicePromo($service_id, $price, $from, $to) {
+        $conn = $this->getConnection();
+        $stmt = $conn->prepare("INSERT INTO serviceprices (Service_ID, Price, PromValidF, PromValidT) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("idss", $service_id, $price, $from, $to);
+        $success = $stmt->execute();
+        $stmt->close();
+        return $success;
+    }
+
+    public function addRoomPromo($room_id, $price, $from, $to) {
+        $conn = $this->getConnection();
+        $stmt = $conn->prepare("INSERT INTO roomprices (Room_ID, Price, PromValidF, PromValidT) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("idss", $room_id, $price, $from, $to);
+        $success = $stmt->execute();
+        $stmt->close();
+        return $success;
+    }
+
+    public function addEmployee($fname, $lname, $email, $phone, $admin_id) {
+        $conn = $this->getConnection();
+        $stmt = $conn->prepare("INSERT INTO employee (Emp_FN, Emp_LN, Emp_Email, Emp_Phone, Admin_ID) VALUES (?, ?, ?, ?, ?)");
+        $stmt->bind_param("ssssi", $fname, $lname, $email, $phone, $admin_id);
+        $success = $stmt->execute();
+        $stmt->close();
+        return $success;
+    }
+
+    public function addAmenityPromo($amenity_id, $price, $from, $to) {
+        $conn = $this->getConnection();
+        $stmt = $conn->prepare("INSERT INTO amenityprices (Amenity_ID, Price, PromValidF, PromValidT) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("idss", $amenity_id, $price, $from, $to);
+        $success = $stmt->execute();
+        $stmt->close();
+        return $success;
     }
 }
 ?>

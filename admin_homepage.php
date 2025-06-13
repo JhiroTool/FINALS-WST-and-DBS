@@ -16,23 +16,9 @@ $employees = $db->getAllEmployees(); // <-- Add this line
 $feedbacks = $db->getRecentFeedback(10);
 $services = $db->getAllServices();
 
-$amenityPromos = [];
-$stmt = $db->getConnection()->query("SELECT ap.*, a.Amenity_Name FROM amenityprices ap JOIN amenity a ON ap.Amenity_ID = a.Amenity_ID ORDER BY ap.PromValidF DESC");
-while ($row = $stmt->fetch_assoc()) {
-    $amenityPromos[] = $row;
-}
-
-$roomPromos = [];
-$stmt = $db->getConnection()->query("SELECT rp.*, r.Room_Type FROM roomprices rp JOIN room r ON rp.Room_ID = r.Room_ID ORDER BY rp.PromValidF DESC");
-while ($row = $stmt->fetch_assoc()) {
-    $roomPromos[] = $row;
-}
-
-$servicePromos = [];
-$stmt = $db->getConnection()->query("SELECT sp.*, s.Service_Name FROM serviceprices sp JOIN service s ON sp.Service_ID = s.Service_ID ORDER BY sp.PromValidF DESC");
-while ($row = $stmt->fetch_assoc()) {
-    $servicePromos[] = $row;
-}
+$amenityPromos = $db->getAllAmenityPromos();
+$roomPromos = $db->getAllRoomPromos();
+$servicePromos = $db->getAllServicePromos();
 ?>
 <!doctype html>
 <html lang="en">

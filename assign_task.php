@@ -10,18 +10,12 @@ $id = intval($_GET['id']);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $task = $_POST['task'];
-    // You should have a tasks table or a field in employees for this
-    $stmt = $db->conn->prepare("UPDATE employee SET Emp_Role=? WHERE Emp_ID=?");
-    $stmt->execute([$task, $id]);
+    $db->assignTaskToEmployee($id, $task);
     header("Location: admin_homepage.php#employees");
     exit();
 }
 
-$stmt = $db->conn->prepare("SELECT * FROM employee WHERE Emp_ID=?");
-$stmt->bind_param("i", $id);
-$stmt->execute();
-$result = $stmt->get_result();
-$employee = $result->fetch_assoc();
+$employee = $db->getEmployeeById($id);
 ?>
 <!DOCTYPE html>
 <html>

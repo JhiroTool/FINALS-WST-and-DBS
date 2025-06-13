@@ -22,85 +22,8 @@ $services = $db->getAllServices();
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet" />
     <link href="style.css" rel="stylesheet" />
+    <link href="assets/css/homepage.css" rel="stylesheet" />
     <link rel="icon" type="image/jpg" href="img/resort.jpg" />
-    <style>
-        body { font-family: 'Montserrat', sans-serif; background: #f7f7f7; }
-        .navbar { background: #fff; }
-        .hero-section {
-            background: linear-gradient(120deg, #e9f5ec 60%, #b2dfdb 100%);
-            padding: 4rem 0 3rem 0;
-            margin-bottom: 2rem;
-            animation: fadeInDown 1s;
-        }
-        @keyframes fadeInDown {
-            from { opacity: 0; transform: translateY(-30px);}
-            to { opacity: 1; transform: translateY(0);}
-        }
-        .section-title { font-weight: 800; margin-bottom: 1.5rem; letter-spacing: 1px; }
-        .minimal-section {
-            background: linear-gradient(120deg, #fff 80%, #e9f5ec 100%);
-            border-radius: 18px;
-            padding: 2.5rem 2rem;
-            margin-bottom: 2.5rem;
-            box-shadow: 0 6px 32px rgba(67,160,71,0.07);
-            transition: box-shadow 0.2s, transform 0.2s;
-        }
-        .minimal-section:hover {
-            box-shadow: 0 12px 48px rgba(67,160,71,0.13);
-            transform: translateY(-2px) scale(1.01);
-        }
-        .btn {
-            border-radius: 20px;
-            transition: background 0.2s, color 0.2s, box-shadow 0.2s;
-            box-shadow: 0 2px 8px rgba(67,160,71,0.07);
-        }
-        .btn-success:hover, .btn-outline-danger:hover {
-            opacity: 0.92;
-            transform: translateY(-2px) scale(1.04);
-            box-shadow: 0 4px 16px rgba(67,160,71,0.13);
-        }
-        .room-card {
-            border: none;
-            border-radius: 16px;
-            box-shadow: 0 2px 12px rgba(67,160,71,0.06);
-            margin-bottom: 1.5rem;
-            transition: box-shadow 0.2s, transform 0.2s;
-            background: linear-gradient(120deg, #fff 80%, #e9f5ec 100%);
-        }
-        .room-card:hover {
-            box-shadow: 0 8px 32px rgba(67,160,71,0.13);
-            transform: translateY(-2px) scale(1.01);
-        }
-        .amenity-icon {
-            color: #43a047;
-            margin-right: 0.7rem;
-            font-size: 1.2rem;
-        }
-        .blockquote {
-            border-left: 4px solid #b2dfdb;
-            padding-left: 1rem;
-            font-style: italic;
-            background: #f8fafb;
-            border-radius: 8px;
-        }
-        .contact-icon {
-            color: #43a047;
-            margin-right: 0.5rem;
-        }
-        footer {
-            background: #e9f5ec;
-            color: #43a047;
-            text-align: center;
-            padding: 1rem 0 0.5rem 0;
-            font-size: 0.95rem;
-            border-top: 1px solid #b2dfdb;
-            margin-top: 2rem;
-        }
-        @media (max-width: 576px) {
-            .minimal-section { padding: 1.2rem 0.7rem; }
-            .hero-section { padding: 2rem 0 1.5rem 0; }
-        }
-    </style>
 </head>
 <body>
     <!-- NAVBAR -->
@@ -259,35 +182,20 @@ $services = $db->getAllServices();
                 $feed_rating = floatval($_POST['feed_rating']);
                 $feed_comment = trim($_POST['feed_comment']);
                 $cust_id = $_SESSION['user_id'];
+                $booking_id = $db->getLatestBookingId($cust_id);
 
-                // Get latest booking for this customer
-                $booking_id = null;
-                $res = $db->getConnection()->query("SELECT Booking_ID FROM booking WHERE Cust_ID = $cust_id ORDER BY Booking_ID DESC LIMIT 1");
-                if ($row = $res->fetch_assoc()) {
-                    $booking_id = $row['Booking_ID'];
-                }
-
-                if ($booking_id) {
-                    $stmt = $db->getConnection()->prepare("INSERT INTO feedback (Cust_ID, Booking_ID, Feed_Rating, Feed_Comment) VALUES (?, ?, ?, ?)");
-                    $stmt->bind_param("iids", $cust_id, $booking_id, $feed_rating, $feed_comment);
-                    $stmt->execute();
+                if ($booking_id && $db->addFeedback($cust_id, $booking_id, $feed_rating, $feed_comment)) {
                     echo '<div class="alert alert-success mt-2">Thank you for your feedback!</div>';
                 } else {
                     echo '<div class="alert alert-warning mt-2">You need a booking to leave feedback.</div>';
                 }
             }
 
-            // Display recent feedback
-            $result = $db->getConnection()->query(
-                "SELECT f.Feed_Rating, f.Feed_Comment, f.Feed_DOF, c.Cust_FN 
-                 FROM feedback f 
-                 JOIN customer c ON f.Cust_ID = c.Cust_ID 
-                 ORDER BY f.Feed_DOF DESC LIMIT 5"
-            );
+            $recentFeedback = $db->getRecentFeedback(5);
             ?>
             <div class="row g-3 mt-4">
-                <?php if ($result && $result->num_rows > 0): ?>
-                    <?php while($row = $result->fetch_assoc()): ?>
+                <?php if ($recentFeedback && count($recentFeedback)): ?>
+                    <?php foreach ($recentFeedback as $row): ?>
                         <div class="col-md-6">
                             <div class="card shadow-sm border-0 h-100">
                                 <div class="card-body d-flex align-items-start">
@@ -311,7 +219,7 @@ $services = $db->getAllServices();
                                 </div>
                             </div>
                         </div>
-                    <?php endwhile; ?>
+                    <?php endforeach; ?>
                 <?php else: ?>
                     <div class="col-12 text-muted">No feedback yet.</div>
                 <?php endif; ?>

@@ -12,21 +12,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $amount = $_POST['payment_amount'];
     $method = $_POST['payment_method'];
 
-    // Insert payment
-    $stmt = $conn->prepare("INSERT INTO payment (Booking_ID, Payment_Amount, Payment_Method) VALUES (?, ?, ?)");
-    $stmt->bind_param("ids", $booking_id, $amount, $method);
-    if ($stmt->execute()) {
-        // Update booking status to 'Paid'
-        $update = $conn->prepare("UPDATE booking SET Booking_Status = 'Paid' WHERE Booking_ID = ?");
-        $update->bind_param("i", $booking_id);
-        $update->execute();
-        $update->close();
-
+    if ($db->recordPayment($booking_id, $amount, $method)) {
         $message = "<div class='alert alert-success'>Payment recorded successfully!</div>";
     } else {
         $message = "<div class='alert alert-danger'>Failed to record payment.</div>";
     }
-    $stmt->close();
 }
 ?>
 <!DOCTYPE html>
@@ -36,31 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="./bootstrap-5.3.3-dist/css/bootstrap.css">
     <link rel="stylesheet" href="style2.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
-    <style>
-        .payment-glass-card {
-            max-width: 480px;
-            margin: 48px auto 0 auto;
-            background: rgba(255,255,255,0.82);
-            border-radius: 1.25rem;
-            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.13);
-            border: 1.5px solid rgba(120,120,120,0.08);
-            backdrop-filter: blur(8px);
-            padding: 2.5rem 2rem 2rem 2rem;
-            animation: fadeInUp 0.7s;
-        }
-        .payment-glass-card h2 {
-            font-weight: 700;
-            margin-bottom: 1.5rem;
-            color: #2563eb;
-            letter-spacing: 1px;
-        }
-        .btn-action {
-            width: 100%;
-        }
-        .back-btn {
-            margin-bottom: 1.5rem;
-        }
-    </style>
+    <link rel="stylesheet" href="assets/css/payment.css">
 </head>
 <body>
 <div class="payment-glass-card">
