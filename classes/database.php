@@ -771,5 +771,38 @@ class Database {
         $stmt->close();
         return $success;
     }
+
+    public function getActiveRoomPromo($room_id, $date) {
+        $conn = $this->getConnection();
+        $stmt = $conn->prepare("SELECT * FROM roomprices WHERE Room_ID=? AND ? BETWEEN PromValidF AND PromValidT ORDER BY PromValidF DESC LIMIT 1");
+        $stmt->bind_param("is", $room_id, $date);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $promo = $result->fetch_assoc();
+        $stmt->close();
+        return $promo;
+    }
+
+    public function getActiveAmenityPromo($amenity_id, $date) {
+        $conn = $this->getConnection();
+        $stmt = $conn->prepare("SELECT * FROM amenityprices WHERE Amenity_ID=? AND ? BETWEEN PromValidF AND PromValidT ORDER BY PromValidF DESC LIMIT 1");
+        $stmt->bind_param("is", $amenity_id, $date);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $promo = $result->fetch_assoc();
+        $stmt->close();
+        return $promo;
+    }
+
+    public function getActiveServicePromo($service_id, $date) {
+        $conn = $this->getConnection();
+        $stmt = $conn->prepare("SELECT * FROM serviceprices WHERE Service_ID=? AND ? BETWEEN PromValidF AND PromValidT ORDER BY PromValidF DESC LIMIT 1");
+        $stmt->bind_param("is", $service_id, $date);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $promo = $result->fetch_assoc();
+        $stmt->close();
+        return $promo;
+    }
 }
 ?>

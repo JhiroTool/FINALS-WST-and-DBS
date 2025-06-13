@@ -38,24 +38,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $date1 = new DateTime($check_in);
     $date2 = new DateTime($check_out);
     $days = $date1 < $date2 ? $date1->diff($date2)->days : 0;
-    $cost = $days * $room['Room_Rate'];
 
-    // Calculate amenities cost
+    // --- ROOM PROMO LOGIC ---
+    $room_rate = $room['Room_Rate'];
+    $room_promo = $db->getActiveRoomPromo($room_id, $check_in);
+    if ($room_promo && $room_promo['Price'] > 0) {
+        $room_rate = $room_promo['Price'];
+    }
+    $cost = $days * $room_rate;
+
+    // --- AMENITIES PROMO LOGIC ---
     $amenities_cost = 0;
     foreach ($amenities as $amenity_id) {
         $amenity = $db->getAmenityById($amenity_id);
-        if ($amenity) {
-            $amenities_cost += $amenity['Amenity_Cost'];
+        $amenity_price = $amenity['Amenity_Cost'];
+        $amenity_promo = $db->getActiveAmenityPromo($amenity_id, $check_in);
+        if ($amenity_promo && $amenity_promo['Price'] > 0) {
+            $amenity_price = $amenity_promo['Price'];
         }
+        $amenities_cost += $amenity_price;
     }
 
-    // Calculate services cost
+    // --- SERVICES PROMO LOGIC ---
     $services_cost = 0;
     foreach ($services as $service_id) {
         $service = $db->getServiceById($service_id);
-        if ($service) {
-            $services_cost += $service['Service_Cost'];
+        $service_price = $service['Service_Cost'];
+        $service_promo = $db->getActiveServicePromo($service_id, $check_in);
+        if ($service_promo && $service_promo['Price'] > 0) {
+            $service_price = $service_promo['Price'];
         }
+        $services_cost += $service_price;
     }
 
     $total_cost = $cost + $amenities_cost + $services_cost;
