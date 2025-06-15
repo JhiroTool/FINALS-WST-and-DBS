@@ -34,11 +34,8 @@ if (isset($_POST['register'])) {
         </script>";
     } else {
         // Check if email or phone already exists
-        $stmt = $conn->prepare("SELECT * FROM customer WHERE Cust_Email = ? OR Cust_Phone = ?");
-        $stmt->bind_param("ss", $email, $phone);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        if ($result->num_rows > 0) {
+        $exists = $db->customerExists($email, $phone);
+        if ($exists) {
             $sweetAlertConfig = "<script>
                 Swal.fire({
                     icon: 'error',
@@ -69,7 +66,7 @@ if (isset($_POST['register'])) {
                 </script>";
             }
         }
-        $stmt->close();
+        // $stmt->close(); // No longer needed
     }
 }
 ?>
